@@ -1,0 +1,92 @@
+                               ospec
+                               ~~~~~
+
+1. INTRODUCTION
+---------------
+
+OSpec is a Behavior-Driven Development library for OCaml, inspired by RSpec, a
+Ruby BDD library. It is implemented as a Camlp4 syntax extension.
+
+This is a work in progress and should be considered less-than-alpha quality.
+
+
+2. USAGE
+--------
+
+To build OSpec, simple type "make". This will build a custom OCaml toplevel
+called "ospec" where you can run specifications. For example, the command below
+will run the specifications in the file specs.ml:
+
+  $ ./ospec < specs.ml
+
+
+3. SYNTAX
+---------
+
+Specifications are defined with the "describe" keyword. Inside a specification,
+example groups are defined, with the "it" keyword, including one or more
+expectations.
+
+A useless example to show OSpec's syntax:
+
+  open Spec;;
+
+  describe "The number one" do
+    it "should equal 2 when added to itself" do
+      (1 + 1) should = 2  (* anything 'a -> 'a -> bool should work *)
+    done;
+
+    it "should be positive" do
+      let positive x = x > 0 in
+      1 should be positive  (* 'a -> bool should work too *)
+    done;
+
+    it "should be negative when multiplied by -1" do
+      let x = 1 * (-1) in
+      x should be < 0;      (* "be" is optional *)
+      x should not be >= 0
+    done;
+
+    it "should fail when divided by 0" do
+      (* For exception tests, wrap it in a fun *)
+      let f = fun () -> 1 / 0 in
+      f should raise_an_exception;
+      f should raise_exception Division_by_zero;
+      f should not raise Exit
+    done;
+
+    it "should match ^[0-9]+$ when converted to a string" do
+      (string_of_int 1) should match_regexp "^[0-9]+$"
+    done
+  done;
+
+  report ();; (* This must be called to show the spec results. *)
+
+
+4. HELPERS
+----------
+
+Some helper functions are provided, as shown above. They are described below.
+
+val raise_an_exception : (unit -> 'a) -> bool
+  Returns true if any exception is raised
+
+val raise_exception : (unit -> 'a) -> exn -> bool
+  Returns true if the given exception is raised
+
+val match_regexp : string -> string -> bool
+  Returns true if the given string (first argument) matches the given regex
+  (second argument).
+
+
+5. TODO
+-------
+
+* When an expectation fails, print the operation and expected/actual values.
+* Handle errors in the specs gracefully.
+* Provide "before" and "after" keywords for setup/teardown code.
+* Allow nested specs.
+* Provide different report formats.
+* Provide more helpers.
+* Cleanup the code, which is horrible and hacky.
+* ...
