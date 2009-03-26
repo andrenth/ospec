@@ -23,7 +23,7 @@
 open Camlp4.PreCast
 open Syntax
 
-type result = Ok | Failed | Error | Pending
+type result = Ok | Failed of int | Error | Pending
 
 type example =
   { mutable description : string
@@ -35,10 +35,37 @@ type spec =
   ; examples     : example Queue.t
   }
 
+type expectation_kind = Positive | Negative (* should or should not *)
+
+type failure =
+  { id        : int
+  ; operation : string
+  ; result    : string
+  ; expected  : string option
+  ; kind      : expectation_kind
+  }
+
+let printer =
+  let module P = Camlp4.Printers.OCaml.Make(Syntax) in
+  new P.printer ()
+
+let format_to_string (f : Format.formatter -> 'a -> unit) (v : 'a) : string =
+  let buf = Buffer.create 128 in
+  let fmt = Format.formatter_of_buffer buf in
+  f fmt v;
+  Format.pp_print_flush fmt ();
+  Buffer.contents buf
+
+let string_of_expr : Ast.expr -> string = format_to_string printer#expr
+let string_of_ident : Ast.ident -> string = format_to_string printer#ident
+let string_of_patt : Ast.patt -> string = format_to_string printer#patt
+
 (* XXX can we get rid of the globals? *)
 let specs : spec Queue.t = Queue.create ()
 let examples : example Queue.t = Queue.create ()
 let results : result Queue.t = Queue.create ()
+let failures : failure Queue.t = Queue.create ()
+let failure_id = ref 1
 
 let new_spec name =
   { name = name; examples = Queue.create () }
@@ -46,45 +73,82 @@ let new_spec name =
 let new_example description =
   { description = description; results = Queue.create () }
 
+let incr_failure_id () =
+  incr failure_id
+
+let curr_failure_id () =
+  !failure_id
+
 let cleanup () =
   Queue.clear specs;
   Queue.clear examples;
-  Queue.clear results
+  Queue.clear results;
+  Queue.clear failures;
+  failure_id := 1
 
 (*
  * Expectations.
  *)
 
+let add_success () =
+  Queue.push Ok results
+
+let add_failure operation result expected kind =
+  let id = curr_failure_id () in
+  let failure =
+    { id = id
+    ; operation = operation
+    ; result    = result
+    ; expected  = expected
+    ; kind      = kind
+    } in
+  Queue.push (Failed id) results;
+  Queue.push failure failures;
+  incr_failure_id ()
+
 let infixop_expectation _loc op result expected =
+  let op_str = string_of_expr op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
   <:expr<
-    Queue.push
-      (if $op$ $result$ $expected$
-        then Ok
-        else Failed)
-      results
+    if $op$ $result$ $expected$ then
+      add_success ()
+    else
+      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 let ident_expectation _loc op result expected =
+  let op_str = string_of_ident op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
   <:expr<
-    Queue.push
-      (if $id:op$ $result$ $expected$ then Ok else Failed)
-      results
+    if $id:op$ $result$ $expected$ then
+      add_success ()
+    else
+      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 let one_arg_ident_expectation _loc op result =
+  let op_str = string_of_ident op in
+  let res_str = string_of_expr result in
   <:expr<
-    Queue.push
-      (if $id:op$ $result$ then Ok else Failed)
-      results
+    if $id:op$ $result$ then
+      add_success ()
+    else
+      add_failure $str:op_str$ $str:res_str$ None Positive
   >>
 
 let fun_expectation _loc args op result expected =
+  let args_str = string_of_patt args in
+  let op_str = string_of_expr op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
+  let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
   <:expr<
-    Queue.push
-      (if (fun $args$ -> $op$) $result$ $expected$
-        then Ok
-        else Failed)
-      results
+    if (fun $args$ -> $op$) $result$ $expected$ then
+      add_success ()
+    else
+      add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 (*
@@ -92,35 +156,48 @@ let fun_expectation _loc args op result expected =
  *)
 
 let infixop_unexpectation _loc op result expected =
+  let op_str = string_of_expr op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
   <:expr<
-    Queue.push
-      (if $op$ $result$ $expected$
-        then Failed
-        else Ok)
-      results
+    if $op$ $result$ $expected$ then
+      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+    else
+      add_success ()
   >>
 
 let ident_unexpectation _loc op result expected =
+  let op_str = string_of_ident op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
   <:expr<
-    Queue.push
-      (if $id:op$ $result$ $expected$ then Failed else Ok)
-      results
+    if $id:op$ $result$ $expected$ then
+      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+    else
+      add_success ()
   >>
 
 let one_arg_ident_unexpectation _loc op result =
+  let op_str = string_of_ident op in
+  let res_str = string_of_expr result in
   <:expr<
-    Queue.push
-      (if $id:op$ $result$ then Failed else Ok)
-      results
+    if $id:op$ $result$ then
+      add_failure $str:op_str$ $str:res_str$ None Negative
+    else
+      add_success ()
   >>
 
 let fun_unexpectation _loc args op result expected =
+  let args_str = string_of_patt args in
+  let op_str = string_of_expr op in
+  let res_str = string_of_expr result in
+  let exp_str = string_of_expr expected in
+  let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
   <:expr<
-    Queue.push
-      (if (fun $args$ -> $op$) $result$ $expected$
-        then Failed
-        else Ok)
-      results
+    if (fun $args$ -> $op$) $result$ $expected$ then
+      add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Negative
+    else
+      add_success ()
   >>
 
 (*
@@ -166,7 +243,7 @@ let run_spec _loc name seq =
 
 let message_of_result = function
   | Ok -> ""
-  | Failed -> "(FAILED)"
+  | Failed i -> Printf.sprintf "(FAILED - %d)" i
   | Error -> "(ERROR)"
   | Pending -> "(Pending)"
 
@@ -186,6 +263,20 @@ let report () =
       Printf.printf "\n" in
     Queue.iter report_example spec.examples in
   Queue.iter report_spec specs;
+  if not (Queue.is_empty failures) then begin
+    let report_failures failure =
+      let expected =
+        match failure.expected with
+        | Some e -> Printf.sprintf " %s" e
+        | None -> "" in
+      Printf.printf "%d) Expected `%s %s%s' to return %s\n"
+        failure.id failure.operation failure.result expected
+        (match failure.kind with
+        | Positive -> "true"
+        | Negative -> "false") in
+    Printf.printf "\n";
+    Queue.iter report_failures failures
+  end;
   cleanup ()
 
 (*

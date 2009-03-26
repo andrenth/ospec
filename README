@@ -81,7 +81,6 @@ val match_regexp : string -> string -> bool
 5. TODO
 -------
 
-* When an expectation fails, print the operation and expected/actual values.
 * Handle errors in the specs gracefully.
 * Provide "before" and "after" keywords for setup/teardown code.
 * Allow nested specs.
