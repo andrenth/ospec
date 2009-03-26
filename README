@@ -13,11 +13,11 @@ This is a work in progress and should be considered less-than-alpha quality.
 2. USAGE
 --------
 
-To build OSpec, simple type "make". This will build a custom OCaml toplevel
-called "ospec" where you can run specifications. For example, the command below
-will run the specifications in the file specs.ml:
+To build OSpec, simply type "make". This will build an executable called
+"ospec", which takes specification files as command line arguments.  For
+example, the command below will run the specifications in the file specs.ml:
 
-  $ ./ospec < specs.ml
+  $ ./ospec specs.ml
 
 
 3. SYNTAX
@@ -28,8 +28,6 @@ example groups are defined, with the "it" keyword, including one or more
 expectations.
 
 A useless example to show OSpec's syntax:
-
-  open Spec;;
 
   describe "The number one" do
     it "should equal 2 when added to itself" do
@@ -58,9 +56,7 @@ A useless example to show OSpec's syntax:
     it "should match ^[0-9]+$ when converted to a string" do
       (string_of_int 1) should match_regexp "^[0-9]+$"
     done
-  done;
-
-  report ();; (* This must be called to show the spec results. *)
+  done
 
 
 4. HELPERS
