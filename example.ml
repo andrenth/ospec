@@ -1,5 +1,3 @@
-open Spec;;
-
 describe "The number one" do
   it "should equal 2 when added to itself" do
     (1 + 1) should = 2  (* anything 'a -> 'a -> bool should work *)
@@ -27,7 +25,4 @@ describe "The number one" do
   it "should match ^[0-9]+$ when converted to a string" do
     (string_of_int 1) should match_regexp "^[0-9]+$"
   done
-done;
-
-(* This must be called to show the spec results. *)
-report ();;
+done

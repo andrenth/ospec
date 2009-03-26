@@ -46,6 +46,11 @@ let new_spec name =
 let new_example description =
   { description = description; results = Queue.create () }
 
+let cleanup () =
+  Queue.clear specs;
+  Queue.clear examples;
+  Queue.clear results
+
 (*
  * Expectations.
  *)
@@ -165,13 +170,7 @@ let message_of_result = function
   | Error -> "(ERROR)"
   | Pending -> "(Pending)"
 
-let cleanup () =
-  Queue.clear specs;
-  Queue.clear examples;
-  Queue.clear results
-
 let report () =
-  Printf.printf "\n";
   let report_spec spec =
     Printf.printf "%s\n" spec.name;
     let report_example example =
