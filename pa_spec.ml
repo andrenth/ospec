@@ -45,6 +45,11 @@ type failure =
   ; kind      : expectation_kind
   }
 
+(*
+ * The string_of_* functions are taken from
+ *   http://caml.inria.fr/pub/ml-archives/caml-list/2008/08/a6c9c42fbb20ce51984d26cc54b61c30.en.html
+ *)
+
 let printer =
   let module P = Camlp4.Printers.OCaml.Make(Syntax) in
   new P.printer ()
