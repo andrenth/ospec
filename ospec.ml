@@ -6,12 +6,12 @@ let eval text =
 
 let run_specs file =
   ignore (Toploop.use_silently Format.std_formatter file);
-  Spec.report ()
+  Pa_spec.report ()
 
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
-  eval "open Spec;;";
+  eval "open Pa_spec;;";
   for i = 1 to (Array.length Sys.argv) - 1 do
     run_specs Sys.argv.(i)
   done
