@@ -55,7 +55,10 @@ A useless example to show OSpec's syntax:
 
     it "should match ^[0-9]+$ when converted to a string" do
       (string_of_int 1) should match_regexp "^[0-9]+$"
-    done
+    done;
+
+    (* Specify behaviors still not implemented like this *)
+    it "should be cool"
   done
 
 
