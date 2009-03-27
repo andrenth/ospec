@@ -71,6 +71,9 @@ let examples : example Queue.t = Queue.create ()
 let results : result Queue.t = Queue.create ()
 let failures : failure Queue.t = Queue.create ()
 let failure_id = ref 1
+let before_each = ref (fun () -> ())
+let after_each = ref (fun () -> ())
+let after_all = ref (fun () -> ())
 
 let new_spec name =
   { name = name; examples = Queue.create () }
@@ -83,6 +86,24 @@ let incr_failure_id () =
 
 let curr_failure_id () =
   !failure_id
+
+let set_before_each hook =
+  before_each := hook
+
+let run_before_each_hook () =
+  !before_each ()
+
+let set_after_each hook =
+  after_each := hook
+
+let run_after_each_hook () =
+  !after_each ()
+
+let set_after_all hook =
+  after_all := hook
+
+let run_after_all_hook () =
+  !after_all ()
 
 let cleanup () =
   Queue.clear specs;
@@ -212,10 +233,12 @@ let fun_unexpectation _loc args op result expected =
 let example_group _loc descr seq =
   <:expr<
     do {
+      run_before_each_hook ();
       do { $list:seq$ };
       let example = new_example $str:descr$;
       Queue.transfer results example.results;
-      Queue.push example examples
+      Queue.push example examples;
+      run_after_each_hook ()
     }
   >>
 
@@ -229,7 +252,20 @@ let pending_example_group _loc descr =
   >>
 
 (*
- * "define" blocks.
+ * "before/after each" blocks.
+ *)
+
+let set_before_each_hook _loc seq =
+  <:expr< set_before_each (fun () -> do { $list:seq$ }) >>
+
+let set_after_each_hook _loc seq =
+  <:expr< set_after_each (fun () -> do { $list:seq$ }) >>
+
+let set_after_all_hook _loc seq =
+  <:expr< set_after_all (fun () -> do { $list:seq$ }) >>
+
+(*
+ * "describe" blocks.
  *)
 
 let run_spec _loc name seq =
@@ -238,7 +274,11 @@ let run_spec _loc name seq =
       do { $list:seq$ };
       let spec = new_spec $str:name$;
       Queue.transfer examples spec.examples;
-      Queue.push spec specs
+      Queue.push spec specs;
+      run_after_all_hook ();
+      set_before_each (fun () -> ());
+      set_after_each (fun () -> ());
+      set_after_all (fun () -> ())
     }
   >>
 
@@ -308,6 +348,16 @@ EXTEND Gram
   expr: LEVEL "simple" [
     [ "describe"; descr = STRING; "do"; seq = LIST0 expr; "done" ->
       run_spec _loc descr seq
+
+    | "before"; "all"; "do"; seq = LIST1 expr; "done" ->
+        <:expr< do { $list:seq$ } >>
+    | "before"; "each"; "do"; seq = LIST1 expr; "done" ->
+        set_before_each_hook _loc seq
+
+    | "after"; "all"; "do"; seq = LIST1 expr; "done" ->
+        set_after_all_hook _loc seq
+    | "after"; "each"; "do"; seq = LIST1 expr; "done" ->
+        set_after_each_hook _loc seq
 
     | "it"; descr = STRING; "do"; seq = LIST1 expr; "done" ->
         example_group _loc descr seq
