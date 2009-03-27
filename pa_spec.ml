@@ -211,9 +211,9 @@ let fun_unexpectation _loc args op result expected =
 
 let example_group _loc descr seq =
   <:expr<
-    let example = new_example $str:descr$ in
     do {
       do { $list:seq$ };
+      let example = new_example $str:descr$ in
       Queue.transfer results example.results;
       Queue.push example examples
     }
@@ -221,8 +221,8 @@ let example_group _loc descr seq =
 
 let pending_example_group _loc descr =
   <:expr<
-    let example = new_example $str:descr$ in
     do {
+      let example = new_example $str:descr$ in
       Queue.push Pending example.results;
       Queue.push example examples
     }
@@ -234,9 +234,9 @@ let pending_example_group _loc descr =
 
 let run_spec _loc name seq =
   <:expr<
-    let spec = new_spec $str:name$ in
     do {
       do { $list:seq$ };
+      let spec = new_spec $str:name$ in
       Queue.transfer examples spec.examples;
       Queue.push spec specs
     }
