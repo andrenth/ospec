@@ -213,7 +213,7 @@ let example_group _loc descr seq =
   <:expr<
     do {
       do { $list:seq$ };
-      let example = new_example $str:descr$ in
+      let example = new_example $str:descr$;
       Queue.transfer results example.results;
       Queue.push example examples
     }
@@ -222,7 +222,7 @@ let example_group _loc descr seq =
 let pending_example_group _loc descr =
   <:expr<
     do {
-      let example = new_example $str:descr$ in
+      let example = new_example $str:descr$;
       Queue.push Pending example.results;
       Queue.push example examples
     }
@@ -236,7 +236,7 @@ let run_spec _loc name seq =
   <:expr<
     do {
       do { $list:seq$ };
-      let spec = new_spec $str:name$ in
+      let spec = new_spec $str:name$;
       Queue.transfer examples spec.examples;
       Queue.push spec specs
     }
