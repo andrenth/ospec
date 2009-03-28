@@ -24,12 +24,36 @@ example, the command below will run the specifications in the file specs.ml:
 ---------
 
 Specifications are defined with the "describe" keyword. Inside a specification,
-example groups are defined, with the "it" keyword, including one or more
-expectations.
+examples are defined, with the "it" keyword, including one or more expectations.
+Expectations are tests comparing some result to an expected value using the
+"should" keyword.
 
-A useless example to show OSpec's syntax:
+OSpec also supports "before" and "after" blocks, which can be used to run
+code before or after running the examples. This is only useful for operations
+which cause side-effects on some global variable (see examples/hooks.ml).
+Defining a variable in a "before" block doesn't make it available for the
+examples, since the scope of such a variable would be the "before" block
+itself.
+
+Here's useless specification which shows how OSpec's syntax works:
 
   describe "The number one" do
+    before all do
+      (* Code here runs once, before all examples. *)
+    done;
+
+    before each do
+      (* Code here runs before each example. *)
+    done;
+
+    after each do
+      (* Code here runs after each example. *)
+    done;
+
+    after all do
+      (* Code here runs once, after all examples. *)
+    done;
+
     it "should equal 2 when added to itself" do
       (1 + 1) should = 2  (* anything 'a -> 'a -> bool should work *)
     done;
@@ -82,7 +106,6 @@ val match_regexp : string -> string -> bool
 -------
 
 * Handle errors in the specs gracefully.
-* Provide "before" and "after" keywords for setup/teardown code.
 * Allow nested specs.
 * Provide different report formats.
 * Provide more helpers.
