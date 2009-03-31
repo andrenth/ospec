@@ -13,5 +13,6 @@ let () =
   Toploop.initialize_toplevel_env ();
   eval "open Pa_spec;;";
   for i = 1 to (Array.length Sys.argv) - 1 do
-    run_specs Sys.argv.(i)
+    run_specs Sys.argv.(i);
+    Printf.printf "\n"
   done
