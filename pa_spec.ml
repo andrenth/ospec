@@ -74,6 +74,7 @@ let failure_id = ref 1
 let before_each = ref (fun () -> ())
 let after_each = ref (fun () -> ())
 let after_all = ref (fun () -> ())
+let total_pending = ref 0
 
 let new_spec name =
   { name = name; examples = Queue.create () }
@@ -105,12 +106,16 @@ let set_after_all hook =
 let run_after_all_hook () =
   !after_all ()
 
+let incr_total_pending () =
+  incr total_pending
+
 let cleanup () =
   Queue.clear specs;
   Queue.clear examples;
   Queue.clear results;
   Queue.clear failures;
-  failure_id := 1
+  failure_id := 1;
+  total_pending := 0
 
 (*
  * Expectations.
@@ -247,7 +252,8 @@ let pending_example_group _loc descr =
     do {
       let example = new_example $str:descr$;
       Queue.push Pending example.results;
-      Queue.push example examples
+      Queue.push example examples;
+      incr_total_pending ()
     }
   >>
 
@@ -286,42 +292,79 @@ let run_spec _loc name seq =
  * Reporting functions.
  *)
 
-let message_of_result = function
-  | Ok -> ""
-  | Failed i -> Printf.sprintf "(FAILED - %d)" i
-  | Pending -> "(Pending)"
+module type Reports = sig
+  val nested : unit -> unit
+  val progress : unit -> unit
+end
 
-let report () =
-  let report_spec spec =
-    Printf.printf "%s\n" spec.name;
-    let report_example example =
-      Printf.printf "  %s" example.description;
-      let report_results res =
-        Printf.printf " %s" (message_of_result res);
-        try
-          match res with
-          | Ok -> ()
-          | _ -> raise Exit
-        with Exit -> () in
-      Queue.iter report_results example.results;
-      Printf.printf "\n" in
-    Queue.iter report_example spec.examples in
-  Queue.iter report_spec specs;
-  if not (Queue.is_empty failures) then begin
-    let report_failures failure =
-      let expected =
-        match failure.expected with
-        | Some e -> Printf.sprintf " %s" e
-        | None -> "" in
-      Printf.printf "%d) Expected `%s %s%s' to return %s\n"
-        failure.id failure.operation failure.result expected
-        (match failure.kind with
-        | Positive -> "true"
-        | Negative -> "false") in
-    Printf.printf "\n";
-    Queue.iter report_failures failures
-  end;
-  cleanup ()
+module Report : Reports = struct
+  let report_failures () =
+    if not (Queue.is_empty failures) then begin
+      let report failure =
+        let expected =
+          match failure.expected with
+          | Some e -> Printf.sprintf " %s" e
+          | None -> "" in
+        Printf.printf "%d) Expected `%s %s%s' to return %s\n"
+          failure.id failure.operation failure.result expected
+          (match failure.kind with
+          | Positive -> "true"
+          | Negative -> "false") in
+      Queue.iter report failures
+    end
+
+  let spec_footer spec =
+    Printf.printf "\n%d examples, %d failures, %d pending\n\n"
+                  (Queue.length spec.examples)
+                  (Queue.length failures)
+                  !total_pending
+
+  let generic spec_header example_header results_footer example_footer
+      message_of_result =
+    let report_spec spec =
+      spec_header spec;
+      let report_example example =
+        example_header example;
+        let report_results res =
+          Printf.printf "%s" (message_of_result res);
+          try
+            match res with
+            | Ok -> ()
+            | _ -> raise Exit
+          with Exit -> () in
+        Queue.iter report_results example.results;
+        results_footer () in
+      Queue.iter report_example spec.examples;
+      example_footer ();
+      spec_footer spec in
+    Queue.iter report_spec specs;
+    report_failures ();
+    cleanup ()
+
+  let nested () =
+    let spec_header spec = Printf.printf "%s\n" spec.name in
+    let example_header example = Printf.printf "  %s" example.description in
+    let results_footer () = Printf.printf "\n" in
+    let example_footer () = () in
+    let message_of_result = function
+      | Ok -> ""
+      | Failed i -> Printf.sprintf " (FAILED - %d)" i
+      | Pending -> " (Pending)" in
+    generic spec_header example_header results_footer example_footer
+            message_of_result
+
+  let progress () =
+    let spec_header _ = () in
+    let example_header _ = () in
+    let results_footer () = () in
+    let example_footer () = Printf.printf "\n" in
+    let message_of_result = function
+      | Ok -> "."
+      | Failed _ -> "F"
+      | Pending -> "*" in
+    generic spec_header example_header results_footer example_footer
+            message_of_result
+end
 
 (*
  * Helpers.

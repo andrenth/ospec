@@ -4,15 +4,16 @@ let eval text =
   let phrase = !Toploop.parse_toplevel_phrase lexbuf in
   ignore (Toploop.execute_phrase false Format.std_formatter phrase)
 
-let run_specs file =
+let run_specs file report =
   ignore (Toploop.use_silently Format.std_formatter file);
-  Pa_spec.report ()
+  report ()
 
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
   eval "open Pa_spec;;";
-  for i = 1 to (Array.length Sys.argv) - 1 do
-    run_specs Sys.argv.(i);
-    Printf.printf "\n"
+  let nfiles = (Array.length Sys.argv) - 1 in
+  for i = 1 to nfiles do
+    run_specs Sys.argv.(i) Pa_spec.Report.nested;
+    if i < nfiles then Printf.printf "\n"
   done
