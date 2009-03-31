@@ -19,6 +19,10 @@ example, the command below will run the specifications in the file specs.ml:
 
   $ ./ospec specs.ml
 
+The default report format is "nested". You can choose the format from the
+command line using the "-format" option. Currently the available formats are
+"nested" and "progress".
+
 
 3. SYNTAX
 ---------
@@ -107,7 +111,7 @@ val match_regexp : string -> string -> bool
 
 * Handle errors in the specs gracefully.
 * Allow nested specs.
-* Provide different report formats.
+* Provide more report formats.
 * Provide more helpers.
 * Cleanup the code, which is horrible and hacky.
 * ...
