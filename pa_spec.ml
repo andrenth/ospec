@@ -23,7 +23,7 @@
 open Camlp4.PreCast
 open Syntax
 
-type result = Ok | Failed of int | Error | Pending
+type result = Ok | Failed of int | Pending
 
 type example =
   { mutable description : string
@@ -289,7 +289,6 @@ let run_spec _loc name seq =
 let message_of_result = function
   | Ok -> ""
   | Failed i -> Printf.sprintf "(FAILED - %d)" i
-  | Error -> "(ERROR)"
   | Pending -> "(Pending)"
 
 let report () =
