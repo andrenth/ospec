@@ -1,3 +1,5 @@
+open Printf
+
 (* http://pleac.sourceforge.net/pleac_ocaml/strings.html#AEN68 *)
 let eval text =
   let lexbuf = (Lexing.from_string text) in
@@ -8,12 +10,36 @@ let run_specs file report =
   ignore (Toploop.use_silently Format.std_formatter file);
   report ()
 
+let usage =
+  sprintf "Usage: %s [options]" Sys.executable_name
+
+let parse_args () =
+  let fmt = ref "nested" in
+  let files = ref [] in
+  let arg_spec = [ "-format", Arg.Set_string fmt, "Report format" ] in
+  let anon s = files := s :: !files in
+  Arg.parse arg_spec anon usage;
+  (!fmt, List.rev !files)
+
+let report_of_string = function
+  | "nested" -> Pa_spec.Report.nested
+  | "progress" -> Pa_spec.Report.progress
+  | s -> raise (Arg.Bad (sprintf "unkown format `%s' specified" s))
+
+let rec run_files report = function
+  | [] ->
+      ()
+  | [file] ->
+      run_specs file report
+  | file::rest ->
+      run_specs file report;
+      printf "\n";
+      run_files report rest
+
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
   eval "open Pa_spec;;";
-  let nfiles = (Array.length Sys.argv) - 1 in
-  for i = 1 to nfiles do
-    run_specs Sys.argv.(i) Pa_spec.Report.nested;
-    if i < nfiles then Printf.printf "\n"
-  done
+  let fmt, files = parse_args () in
+  let report = report_of_string fmt in
+  run_files report files
