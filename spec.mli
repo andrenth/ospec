@@ -1,8 +1,10 @@
 open Spec_types
 
+type t
 type example
 type failure
-type t
+type expectation_kind = Positive | Negative (* should or should not *)
+type result = Ok | Failed of int | Pending
 
 val name : t -> string
 val example_description : example -> string

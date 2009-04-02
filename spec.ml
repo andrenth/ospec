@@ -1,9 +1,13 @@
 open Spec_types
 
+type result = Ok | Failed of int | Pending
+
 type example =
   { mutable description : string
   ; results             : result Queue.t
   }
+
+type expectation_kind = Positive | Negative (* should or should not *)
 
 type failure =
   { id        : int

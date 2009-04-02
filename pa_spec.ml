@@ -33,7 +33,8 @@ let infixop_expectation _loc op result expected =
     if $op$ $result$ $expected$ then
       Spec.add_success ()
     else
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Positive
   >>
 
 let ident_expectation _loc op result expected =
@@ -44,7 +45,8 @@ let ident_expectation _loc op result expected =
     if $id:op$ $result$ $expected$ then
       Spec.add_success ()
     else
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Positive
   >>
 
 let one_arg_ident_expectation _loc op result =
@@ -54,7 +56,7 @@ let one_arg_ident_expectation _loc op result =
     if $id:op$ $result$ then
       Spec.add_success ()
     else
-      Spec.add_failure $str:op_str$ $str:res_str$ None Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ None Spec.Positive
   >>
 
 let fun_expectation _loc args op result expected =
@@ -67,7 +69,8 @@ let fun_expectation _loc args op result expected =
     if (fun $args$ -> $op$) $result$ $expected$ then
       Spec.add_success ()
     else
-      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Positive
   >>
 
 (*
@@ -80,7 +83,8 @@ let infixop_unexpectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $op$ $result$ $expected$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Negative
     else
       Spec.add_success ()
   >>
@@ -91,7 +95,8 @@ let ident_unexpectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $id:op$ $result$ $expected$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Negative
     else
       Spec.add_success ()
   >>
@@ -101,7 +106,7 @@ let one_arg_ident_unexpectation _loc op result =
   let res_str = string_of_expr result in
   <:expr<
     if $id:op$ $result$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ None Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ None Spec.Negative
     else
       Spec.add_success ()
   >>
@@ -114,7 +119,8 @@ let fun_unexpectation _loc args op result expected =
   let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
   <:expr<
     if (fun $args$ -> $op$) $result$ $expected$ then
-      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$)
+                       Spec.Negative
     else
       Spec.add_success ()
   >>
@@ -139,7 +145,7 @@ let pending_example_group _loc descr =
   <:expr<
     do {
       let example = Spec.new_example $str:descr$;
-      Spec.add_result Pending example;
+      Spec.add_result Spec.Pending example;
       Spec.add_example example;
       Spec.incr_total_pending ()
     }
@@ -150,13 +156,13 @@ let pending_example_group _loc descr =
  *)
 
 let set_before_each_hook _loc seq =
-  <:expr< set_before_each (fun () -> do { $list:seq$ }) >>
+  <:expr< Spec.set_before_each (fun () -> do { $list:seq$ }) >>
 
 let set_after_each_hook _loc seq =
-  <:expr< set_after_each (fun () -> do { $list:seq$ }) >>
+  <:expr< Spec.set_after_each (fun () -> do { $list:seq$ }) >>
 
 let set_after_all_hook _loc seq =
-  <:expr< set_after_all (fun () -> do { $list:seq$ }) >>
+  <:expr< Spec.set_after_all (fun () -> do { $list:seq$ }) >>
 
 (*
  * "describe" blocks.
