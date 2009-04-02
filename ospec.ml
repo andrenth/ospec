@@ -8,7 +8,7 @@ let eval text =
 
 let run_specs file report =
   ignore (Toploop.use_silently Format.std_formatter file);
-  eval (sprintf "%s specs; cleanup ();;" report)
+  eval (sprintf "%s (Spec.specs ()); Spec.cleanup ();;" report)
 
 let usage =
   sprintf "Usage: %s [options]" Sys.executable_name
@@ -43,9 +43,9 @@ let load_object_files files =
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
-  load_object_files ["spec_types.cmo"; "global.cmo"; "helpers.cmo"];
+  load_object_files ["spec_types.cmo"; "spec.cmo"; "helpers.cmo"];
   eval "open Spec_types;;";
-  eval "open Global;;";
+  eval "open Spec;;";
   eval "open Helpers;;";
   let fmt, files = parse_args () in
   let report = report_function_name fmt in

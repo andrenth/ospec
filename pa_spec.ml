@@ -31,9 +31,9 @@ let infixop_expectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $op$ $result$ $expected$ then
-      add_success ()
+      Spec.add_success ()
     else
-      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 let ident_expectation _loc op result expected =
@@ -42,9 +42,9 @@ let ident_expectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $id:op$ $result$ $expected$ then
-      add_success ()
+      Spec.add_success ()
     else
-      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 let one_arg_ident_expectation _loc op result =
@@ -52,9 +52,9 @@ let one_arg_ident_expectation _loc op result =
   let res_str = string_of_expr result in
   <:expr<
     if $id:op$ $result$ then
-      add_success ()
+      Spec.add_success ()
     else
-      add_failure $str:op_str$ $str:res_str$ None Positive
+      Spec.add_failure $str:op_str$ $str:res_str$ None Positive
   >>
 
 let fun_expectation _loc args op result expected =
@@ -65,9 +65,9 @@ let fun_expectation _loc args op result expected =
   let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
   <:expr<
     if (fun $args$ -> $op$) $result$ $expected$ then
-      add_success ()
+      Spec.add_success ()
     else
-      add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Positive
+      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Positive
   >>
 
 (*
@@ -80,9 +80,9 @@ let infixop_unexpectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $op$ $result$ $expected$ then
-      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
     else
-      add_success ()
+      Spec.add_success ()
   >>
 
 let ident_unexpectation _loc op result expected =
@@ -91,9 +91,9 @@ let ident_unexpectation _loc op result expected =
   let exp_str = string_of_expr expected in
   <:expr<
     if $id:op$ $result$ $expected$ then
-      add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) Negative
     else
-      add_success ()
+      Spec.add_success ()
   >>
 
 let one_arg_ident_unexpectation _loc op result =
@@ -101,9 +101,9 @@ let one_arg_ident_unexpectation _loc op result =
   let res_str = string_of_expr result in
   <:expr<
     if $id:op$ $result$ then
-      add_failure $str:op_str$ $str:res_str$ None Negative
+      Spec.add_failure $str:op_str$ $str:res_str$ None Negative
     else
-      add_success ()
+      Spec.add_success ()
   >>
 
 let fun_unexpectation _loc args op result expected =
@@ -114,9 +114,9 @@ let fun_unexpectation _loc args op result expected =
   let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
   <:expr<
     if (fun $args$ -> $op$) $result$ $expected$ then
-      add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Negative
+      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) Negative
     else
-      add_success ()
+      Spec.add_success ()
   >>
 
 (*
@@ -126,22 +126,22 @@ let fun_unexpectation _loc args op result expected =
 let example_group _loc descr seq =
   <:expr<
     do {
-      run_before_each_hook ();
+      Spec.run_before_each_hook ();
       do { $list:seq$ };
-      let example = new_example $str:descr$;
-      Queue.transfer results example.results;
-      Queue.push example examples;
-      run_after_each_hook ()
+      let example = Spec.new_example $str:descr$;
+      Spec.transfer_results example;
+      Spec.add_example example;
+      Spec.run_after_each_hook ()
     }
   >>
 
 let pending_example_group _loc descr =
   <:expr<
     do {
-      let example = new_example $str:descr$;
-      Queue.push Pending example.results;
-      Queue.push example examples;
-      incr_total_pending ()
+      let example = Spec.new_example $str:descr$;
+      Spec.add_result Pending example;
+      Spec.add_example example;
+      Spec.incr_total_pending ()
     }
   >>
 
@@ -166,13 +166,14 @@ let run_spec _loc name seq =
   <:expr<
     do {
       do { $list:seq$ };
-      let spec = new_spec $str:name$;
-      Queue.transfer examples spec.examples;
-      Queue.push spec specs;
-      run_after_all_hook ();
-      set_before_each (fun () -> ());
-      set_after_each (fun () -> ());
-      set_after_all (fun () -> ())
+      let spec = Spec.new_spec $str:name$;
+      Spec.transfer_examples spec;
+      Spec.transfer_failures spec;
+      Spec.add_spec spec;
+      Spec.run_after_all_hook ();
+      Spec.set_before_each (fun () -> ());
+      Spec.set_after_each (fun () -> ());
+      Spec.set_after_all (fun () -> ())
     }
   >>
 

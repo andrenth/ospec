@@ -1,2 +1,2 @@
-val nested : Spec_types.spec Queue.t -> unit
-val progress : Spec_types.spec Queue.t -> unit
+val nested : Spec.t Queue.t -> unit
+val progress : Spec.t Queue.t -> unit
