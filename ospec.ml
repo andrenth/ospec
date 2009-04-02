@@ -43,7 +43,7 @@ let load_object_files files =
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
-  load_object_files ["spec_types.cmo"; "spec.cmo"; "helpers.cmo"];
+  load_object_files ["spec.cmo"; "helpers.cmo"];
   eval "open Helpers;;";
   let fmt, files = parse_args () in
   let report = report_function_name fmt in
