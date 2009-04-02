@@ -1,5 +1,3 @@
-open Spec_types
-
 type t
 type example
 type failure

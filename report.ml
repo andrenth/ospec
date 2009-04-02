@@ -1,4 +1,3 @@
-open Spec_types
 open Spec
 
 let report_failures spec =

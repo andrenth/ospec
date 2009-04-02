@@ -1,5 +1,3 @@
-open Spec_types
-
 type result = Ok | Failed of int | Pending
 
 type example =
