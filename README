@@ -9,7 +9,13 @@ Ruby BDD library. It is implemented as a Camlp4 syntax extension.
 
 This is a work in progress and should be considered beta quality.
 
-Note: OSpec requires OCaml >= 3.11.0 to run.
+Note: OSpec requires OCaml >= 3.10.0 to run. On versions below 3.11.0, though,
+there are two limitations:
+
+* If you want to use helpers in your specifications (see below), you must
+  explicitely "open Helpers" at the top of every specification file.
+
+* Running the "ospec" command with multiple files as arguments doesn't work.
 
 
 2. USAGE
