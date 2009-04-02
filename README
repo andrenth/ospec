@@ -7,7 +7,9 @@
 OSpec is a Behavior-Driven Development library for OCaml, inspired by RSpec, a
 Ruby BDD library. It is implemented as a Camlp4 syntax extension.
 
-This is a work in progress and should be considered less-than-alpha quality.
+This is a work in progress and should be considered beta quality.
+
+Note: OSpec requires OCaml >= 3.11.0 to run.
 
 
 2. USAGE
