@@ -8,7 +8,7 @@ let eval text =
 
 let run_specs file report =
   ignore (Toploop.use_silently Format.std_formatter file);
-  report ()
+  eval (sprintf "%s specs;;" report)
 
 let usage =
   sprintf "Usage: %s [options]" Sys.executable_name
@@ -21,25 +21,32 @@ let parse_args () =
   Arg.parse arg_spec anon usage;
   (!fmt, List.rev !files)
 
-let report_of_string = function
-  | "nested" -> Pa_spec.Report.nested
-  | "progress" -> Pa_spec.Report.progress
+let report_function_name = function
+  | "nested" -> "Report.nested"
+  | "progress" -> "Report.progress"
   | s -> raise (Arg.Bad (sprintf "unkown format `%s' specified" s))
 
 let rec run_files report = function
-  | [] ->
-      ()
-  | [file] ->
-      run_specs file report
+  | [] -> ()
+  | [file] -> run_specs file report
   | file::rest ->
       run_specs file report;
       printf "\n";
       run_files report rest
 
+let load_object_files files =
+  let dir = Findlib.package_directory "ospec" in
+  let fmt = Format.std_formatter in
+  Topdirs.dir_directory dir;
+  List.iter (fun file -> Topdirs.dir_load fmt (dir ^ "/" ^ file)) files
+
 let () =
   Sys.interactive := false;
   Toploop.initialize_toplevel_env ();
-  eval "open Pa_spec;;";
+  load_object_files ["spec_types.cmo"; "global.cmo"; "helpers.cmo"];
+  eval "open Spec_types;;";
+  eval "open Global;;";
+  eval "open Helpers;;";
   let fmt, files = parse_args () in
-  let report = report_of_string fmt in
+  let report = report_function_name fmt in
   run_files report files

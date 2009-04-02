@@ -1,7 +1,26 @@
+PREFIX = $(shell ocamlfind ocamlc -where | sed -e 's|/lib/ocaml||')
+
 all:
-	ocamlc -dtypes -a -o pa_spec.cma -pp camlp4orf -I +camlp4 pa_spec.ml
-	ocamlc -o ospec dynlink.cma -I +camlp4 toplevellib.cma camlp4o.cma str.cma \
-		     pa_spec.cma ospec.ml
+	ocamlfind ocamlc -dtypes -c spec_types.ml
+	ocamlfind ocamlc -dtypes -syntax camlp4o \
+		-package camlp4.extend,camlp4.quotations spec_types.cmo -c pa_spec.ml
+	ocamlfind ocamlc -dtypes -c spec_types.ml
+	ocamlfind ocamlc -dtypes -c global.ml
+	ocamlfind ocamlc -dtypes -c report.mli
+	ocamlfind ocamlc -dtypes -c report.ml
+	ocamlfind ocamlc -dtypes -c helpers.ml
+	ocamlfind ocamlc -dtypes -o ospec dynlink.cma -I +camlp4 -package findlib \
+		toplevellib.cma camlp4o.cma str.cma global.cmo report.cmo helpers.cmo \
+		pa_spec.cmo ospec.ml -linkpkg
+
+install:
+	ocamlfind install ospec META pa_spec.cmo pa_spec.cmi global.cmo global.cmi \
+		helpers.cmo helpers.cmi report.cmo report.cmi spec_types.cmo spec_types.cmi
+	install -m 755 ospec $(PREFIX)/bin
+
+uninstall:
+	ocamlfind remove ospec
+	rm -f $(PREFIX)/bin/ospec
 
 clean:
-	rm -f *.annot *.cma *.cmi *.cmo ospec
+	rm -f *.annot *.cmo *.cmi *.cmo ospec
