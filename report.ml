@@ -41,8 +41,7 @@ let generic spec_header example_header results_footer example_footer
     example_footer ();
     spec_footer spec in
   Queue.iter report_spec specs;
-  report_failures ();
-  cleanup ()
+  report_failures ()
 
 let nested specs =
   let spec_header spec = Printf.printf "%s\n" spec.name in

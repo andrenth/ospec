@@ -8,7 +8,7 @@ let eval text =
 
 let run_specs file report =
   ignore (Toploop.use_silently Format.std_formatter file);
-  eval (sprintf "%s specs;;" report)
+  eval (sprintf "%s specs; cleanup ();;" report)
 
 let usage =
   sprintf "Usage: %s [options]" Sys.executable_name
