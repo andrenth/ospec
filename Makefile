@@ -1,4 +1,4 @@
-PREFIX = $(shell ocamlfind ocamlc -where | sed -e 's|/lib/ocaml||')
+PREFIX = $(shell ocamlfind ocamlc -where | sed -e 's|/lib.*||')
 
 all:
 	ocamlfind ocamlc -dtypes -c spec_types.ml
