@@ -13,11 +13,17 @@ This is a work in progress and should be considered less-than-alpha quality.
 2. USAGE
 --------
 
-To build OSpec, simply type "make". This will build an executable called
-"ospec", which takes specification files as command line arguments.  For
-example, the command below will run the specifications in the file specs.ml:
+To build and install OSpec, simply type
 
-  $ ./ospec specs.ml
+  $ make
+  # make install
+
+These commands (and OSpec itself) rely on findlib, so you need to have it
+installed for them to work. An executable called "ospec" which takes
+specification files as command line arguments will be build. For example, the
+command below will run the specifications in the file specs.ml:
+
+  $ ospec specs.ml
 
 The default report format is "nested". You can choose the format from the
 command line using the "-format" option. Currently the available formats are
