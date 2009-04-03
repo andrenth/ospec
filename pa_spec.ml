@@ -73,6 +73,16 @@ let fun_expectation _loc args op result expected =
                        Spec.Positive
   >>
 
+let match_expectation _loc result pattern =
+  let res_str = string_of_expr result in
+  let patt_str = string_of_patt pattern in
+  <:expr<
+    match $result$ with
+    [ $pattern$ -> Spec.add_success ()
+    | _ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
+                            Spec.Positive ]
+  >>
+
 (*
  * Unexpectations.
  *)
@@ -123,6 +133,16 @@ let fun_unexpectation _loc args op result expected =
                        Spec.Negative
     else
       Spec.add_success ()
+  >>
+
+let match_unexpectation _loc result pattern =
+  let res_str = string_of_expr result in
+  let patt_str = string_of_patt pattern in
+  <:expr<
+    match $result$ with
+    [ $pattern$ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
+                                    Spec.Negative
+    | _ -> Spec.add_success () ]
   >>
 
 (*
@@ -183,6 +203,11 @@ let run_spec _loc name seq =
     }
   >>
 
+(* From Camlp4OCamlRevisedParser.ml *)
+let mksequence _loc = function
+  | <:expr< $_$; $_$ >> as e -> <:expr< do { $e$ } >>
+  | e -> e
+
 EXTEND Gram
   expr: LEVEL "simple" [
     [ "describe"; descr = STRING; "do"; seq = LIST0 expr; "done" ->
@@ -222,6 +247,13 @@ EXTEND Gram
     | res = SELF; "should"; "not"; OPT "be"; "("; "fun"; args = ipatt;
       op = fun_def; ")"; exp = SELF ->
         fun_unexpectation _loc args op res exp
+
+    | "match"; e = sequence; "with"; a = match_case ->
+        <:expr< match $mksequence _loc e$ with [ $a$ ] >>
+    | res = SELF; "should"; "match"; patt = ipatt ->
+        match_expectation _loc res patt
+    | res = SELF; "should"; "not"; "match"; patt = ipatt ->
+        match_unexpectation _loc res patt
     ]
   ];
 END

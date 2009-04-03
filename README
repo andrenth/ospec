@@ -120,7 +120,16 @@ val match_regexp : string -> string -> bool
   (second argument).
 
 
-5. TODO
+5. MATCH SYTAX EXTENSION
+------------------------
+
+OSpec also extends the "match" syntax so that you can write expectations like
+
+  [1] should match h::t
+  [1] should not match []
+
+
+6. TODO
 -------
 
 * Handle errors in the specs gracefully.
