@@ -4,13 +4,13 @@
 1. INTRODUCTION
 ---------------
 
-OSpec is a Behavior-Driven Development library for OCaml, inspired by RSpec, a
+OSpec is a Behavior-Driven Development tool for OCaml, inspired by RSpec, a
 Ruby BDD library. It is implemented as a Camlp4 syntax extension.
 
 This is a work in progress and should be considered beta quality.
 
 Note: OSpec requires OCaml >= 3.10.0 to run. On versions below 3.11.0, though,
-there are two limitations:
+there are two limitations due to OCaml toplevel bugs:
 
 * If you want to use helpers in your specifications (see below), you must
   explicitely "open Helpers" at the top of every specification file.
@@ -46,32 +46,9 @@ examples are defined, with the "it" keyword, including one or more expectations.
 Expectations are tests comparing some result to an expected value using the
 "should" keyword.
 
-OSpec also supports "before" and "after" blocks, which can be used to run
-code before or after running the examples. This is only useful for operations
-which cause side-effects on some global variable (see examples/hooks.ml).
-Defining a variable in a "before" block doesn't make it available for the
-examples, since the scope of such a variable would be the "before" block
-itself.
-
 Here's useless specification which shows how OSpec's syntax works:
 
   describe "The number one" do
-    before all do
-      (* Code here runs once, before all examples. *)
-    done;
-
-    before each do
-      (* Code here runs before each example. *)
-    done;
-
-    after each do
-      (* Code here runs after each example. *)
-    done;
-
-    after all do
-      (* Code here runs once, after all examples. *)
-    done;
-
     it "should equal 2 when added to itself" do
       (1 + 1) should = 2  (* anything 'a -> 'a -> bool should work *)
     done;
@@ -104,7 +81,49 @@ Here's useless specification which shows how OSpec's syntax works:
   done
 
 
-4. HELPERS
+4. BEFORE AND AFTER BLOCKS
+--------------------------
+
+OSpec supports "before" and "after" blocks, which can be used to run code
+before or after running the examples. This is only useful for operations
+which cause side-effects on some global variable (see examples/hooks.ml).
+Defining a variable in a "before" block doesn't make it available for the
+examples, since the scope of such a variable would be the "before" block
+itself.
+
+  describe "An example" do
+    before all do
+      (* Code here runs once, before all examples. *)
+    done;
+
+    before each do
+      (* Code here runs before each example. *)
+    done;
+
+    after each do
+      (* Code here runs after each example. *)
+    done;
+
+    after all do
+      (* Code here runs once, after all examples. *)
+    done;
+
+    it "should behave in a certain way" do
+      (* ... *)
+    done
+  done
+
+
+5. MATCH SYNTAX EXTENSION
+-------------------------
+
+OSpec also extends the "match" syntax so that you can write expectations like
+
+  [1] should match h::t
+  [1] should not match []
+
+
+6. HELPERS
 ----------
 
 Some helper functions are provided, as shown above. They are described below.
@@ -120,16 +139,7 @@ val match_regexp : string -> string -> bool
   (second argument).
 
 
-5. MATCH SYNTAX EXTENSION
-------------------------
-
-OSpec also extends the "match" syntax so that you can write expectations like
-
-  [1] should match h::t
-  [1] should not match []
-
-
-6. TODO
+7. TODO
 -------
 
 * Handle errors in the specs gracefully.
