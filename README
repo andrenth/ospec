@@ -120,7 +120,7 @@ val match_regexp : string -> string -> bool
   (second argument).
 
 
-5. MATCH SYTAX EXTENSION
+5. MATCH SYNTAX EXTENSION
 ------------------------
 
 OSpec also extends the "match" syntax so that you can write expectations like
