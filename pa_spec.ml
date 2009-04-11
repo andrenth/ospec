@@ -25,52 +25,64 @@ let string_of_patt : Ast.patt -> string = format_to_string printer#patt
  * Expectations.
  *)
 
-let infixop_expectation _loc op result expected =
+let positive =
+  let _loc = Loc.ghost in
+  <:expr< Spec.Positive >>
+
+let negative =
+  let _loc = Loc.ghost in
+  <:expr< Spec.Negative >>
+
+let kind_test_modifier kind =
+  let _loc = Loc.ghost in
+  match kind with
+  | <:expr< Spec.Positive >> -> <:expr< fun x -> not x >>
+  | <:expr< Spec.Negative >> -> <:expr< fun x -> x >>
+  | _ -> failwith "kind_test_modifier: invalid expectation kind"
+
+let infixop_expectation _loc op result expected kind =
   let op_str = string_of_expr op in
   let res_str = string_of_expr result in
   let exp_str = string_of_expr expected in
+  let f = kind_test_modifier kind in
   <:expr<
-    if $op$ $result$ $expected$ then
-      Spec.add_success ()
-    else
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Positive
+    if $f$ ($op$ $result$ $expected$) then
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+    else ()
   >>
 
-let ident_expectation _loc op result expected =
+let ident_expectation _loc op result expected kind =
   let op_str = string_of_ident op in
   let res_str = string_of_expr result in
   let exp_str = string_of_expr expected in
+  let f = kind_test_modifier kind in
   <:expr<
-    if $id:op$ $result$ $expected$ then
-      Spec.add_success ()
-    else
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Positive
+    if $f$ ($id:op$ $result$ $expected$) then
+      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+    else ()
   >>
 
-let one_arg_ident_expectation _loc op result =
+let one_arg_ident_expectation _loc op result kind =
   let op_str = string_of_ident op in
   let res_str = string_of_expr result in
+  let f = kind_test_modifier kind in
   <:expr<
-    if $id:op$ $result$ then
-      Spec.add_success ()
-    else
-      Spec.add_failure $str:op_str$ $str:res_str$ None Spec.Positive
+    if $f$ ($id:op$ $result$) then
+      Spec.add_failure $str:op_str$ $str:res_str$ None $kind$
+    else ()
   >>
 
-let fun_expectation _loc args op result expected =
+let fun_expectation _loc args op result expected kind =
   let args_str = string_of_patt args in
   let op_str = string_of_expr op in
   let res_str = string_of_expr result in
   let exp_str = string_of_expr expected in
   let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
+  let f = kind_test_modifier kind in
   <:expr<
-    if (fun $args$ -> $op$) $result$ $expected$ then
-      Spec.add_success ()
-    else
-      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Positive
+    if $f$ ((fun $args$ -> $op$) $result$ $expected$) then
+      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+    else ()
   >>
 
 let match_expectation _loc result pattern =
@@ -78,61 +90,9 @@ let match_expectation _loc result pattern =
   let patt_str = string_of_patt pattern in
   <:expr<
     match $result$ with
-    [ $pattern$ -> Spec.add_success ()
+    [ $pattern$ -> ()
     | _ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
                             Spec.Positive ]
-  >>
-
-(*
- * Unexpectations.
- *)
-
-let infixop_unexpectation _loc op result expected =
-  let op_str = string_of_expr op in
-  let res_str = string_of_expr result in
-  let exp_str = string_of_expr expected in
-  <:expr<
-    if $op$ $result$ $expected$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Negative
-    else
-      Spec.add_success ()
-  >>
-
-let ident_unexpectation _loc op result expected =
-  let op_str = string_of_ident op in
-  let res_str = string_of_expr result in
-  let exp_str = string_of_expr expected in
-  <:expr<
-    if $id:op$ $result$ $expected$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Negative
-    else
-      Spec.add_success ()
-  >>
-
-let one_arg_ident_unexpectation _loc op result =
-  let op_str = string_of_ident op in
-  let res_str = string_of_expr result in
-  <:expr<
-    if $id:op$ $result$ then
-      Spec.add_failure $str:op_str$ $str:res_str$ None Spec.Negative
-    else
-      Spec.add_success ()
-  >>
-
-let fun_unexpectation _loc args op result expected =
-  let args_str = string_of_patt args in
-  let op_str = string_of_expr op in
-  let res_str = string_of_expr result in
-  let exp_str = string_of_expr expected in
-  let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
-  <:expr<
-    if (fun $args$ -> $op$) $result$ $expected$ then
-      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$)
-                       Spec.Negative
-    else
-      Spec.add_success ()
   >>
 
 let match_unexpectation _loc result pattern =
@@ -142,7 +102,7 @@ let match_unexpectation _loc result pattern =
     match $result$ with
     [ $pattern$ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
                                     Spec.Negative
-    | _ -> Spec.add_success () ]
+    | _ -> () ]
   >>
 
 (*
@@ -155,7 +115,6 @@ let example_group _loc descr seq =
       Spec.run_before_each_hook ();
       do { $list:seq$ };
       let example = Spec.new_example $str:descr$;
-      Spec.transfer_results example;
       Spec.add_example example;
       Spec.run_after_each_hook ()
     }
@@ -163,12 +122,7 @@ let example_group _loc descr seq =
 
 let pending_example_group _loc descr =
   <:expr<
-    do {
-      let example = Spec.new_example $str:descr$;
-      Spec.add_result Spec.Pending example;
-      Spec.add_example example;
-      Spec.incr_total_pending ()
-    }
+    Spec.add_example (Spec.new_pending_example $str:descr$)
   >>
 
 (*
@@ -229,24 +183,24 @@ EXTEND Gram
         pending_example_group _loc descr
 
     | res = SELF; "should"; OPT "be"; op = infixop0; exp = SELF ->
-        infixop_expectation _loc op res exp
+        infixop_expectation _loc op res exp positive
     | res = SELF; "should"; OPT "be"; op = ident; exp = SELF ->
-        ident_expectation _loc op res exp
+        ident_expectation _loc op res exp positive
     | res = SELF; "should"; OPT "be"; op = ident ->
-        one_arg_ident_expectation _loc op res
+        one_arg_ident_expectation _loc op res positive
     | res = SELF; "should"; OPT "be"; "("; "fun"; args = ipatt;
       op = fun_def; ")"; exp = SELF ->
-        fun_expectation _loc args op res exp
+        fun_expectation _loc args op res exp positive
 
     | res = SELF; "should"; "not"; OPT "be"; op = infixop0; exp = SELF ->
-        infixop_unexpectation _loc op res exp
+        infixop_expectation _loc op res exp negative
     | res = SELF; "should"; "not"; OPT "be"; op = ident; exp = SELF ->
-        ident_unexpectation _loc op res exp
+        ident_expectation _loc op res exp negative
     | res = SELF; "should"; "not"; OPT "be"; op = ident ->
-        one_arg_ident_unexpectation _loc op res
+        one_arg_ident_expectation _loc op res negative
     | res = SELF; "should"; "not"; OPT "be"; "("; "fun"; args = ipatt;
       op = fun_def; ")"; exp = SELF ->
-        fun_unexpectation _loc args op res exp
+        fun_expectation _loc args op res exp negative
 
     | "match"; e = sequence; "with"; a = match_case ->
         <:expr< match $mksequence _loc e$ with [ $a$ ] >>

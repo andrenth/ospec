@@ -26,14 +26,7 @@ let generic spec_header example_header results_footer example_footer
     spec_header spec;
     let report_example example =
       example_header example;
-      let report_results res =
-        Printf.printf "%s" (message_of_result res);
-        try
-          match res with
-          | Ok -> ()
-          | _ -> raise Exit
-        with Exit -> () in
-      Spec.iter_results report_results example;
+      Printf.printf "%s" (message_of_result (Spec.example_result example));
       results_footer () in
     Spec.iter_examples report_example spec;
     example_footer ();
@@ -50,7 +43,9 @@ let nested specs =
   let example_footer () = Printf.printf "\n" in
   let message_of_result = function
     | Ok -> ""
-    | Failed i -> Printf.sprintf " (FAILED - %d)" i
+    | Failed (i, j) ->
+        if i = j then Printf.sprintf " (FAILED: %d)" i
+                 else Printf.sprintf " (FAILED: %d-%d)" i j
     | Pending -> " (Pending)" in
   generic spec_header example_header results_footer example_footer
           message_of_result specs
