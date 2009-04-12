@@ -1,0 +1,9 @@
+*.annot
+*.cmi
+*.cmx
+*.cma
+*.cmo
+*.swp
+*.a
+*.o
+ospec
