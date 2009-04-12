@@ -46,6 +46,8 @@ let () =
   load_object_files ["spec.cmo"; "helpers.cmo"];
 IFNDEF OCAML_BUG THEN
   eval "open Helpers;;";
+  eval "open Prop;;";
+  eval "open Gen;;";
 END
   let fmt, files = parse_args () in
   let report = report_function_name fmt in

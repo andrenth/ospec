@@ -15,13 +15,17 @@ all:
 	ocamlfind ocamlc -dtypes -c report.mli
 	ocamlfind ocamlc -dtypes -c report.ml
 	ocamlfind ocamlc -dtypes -c helpers.ml
+	ocamlfind ocamlc -dtypes -c gen.ml
+	ocamlfind ocamlc -dtypes -c prop.mli
+	ocamlfind ocamlc -dtypes -c prop.ml
 	ocamlfind ocamlc -dtypes -o ospec dynlink.cma -I +camlp4 -package findlib \
 		toplevellib.cma camlp4o.cma str.cma spec.cmo report.cmo helpers.cmo \
-		pa_spec.cmo ospec.ml -linkpkg $(MACRO)
+		gen.cmo prop.cmo pa_spec.cmo ospec.ml -linkpkg $(MACRO)
 
 install:
 	ocamlfind install ospec META pa_spec.cmo pa_spec.cmi spec.cmo spec.cmi \
-		helpers.cmo helpers.cmi report.cmo report.cmi
+		helpers.cmo helpers.cmi report.cmo report.cmi gen.cmo gen.cmi prop.cmo \
+		prop.cmi
 	install -m 755 ospec $(PREFIX)/bin
 
 uninstall:
