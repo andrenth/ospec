@@ -17,7 +17,7 @@ done;
 
 describe "A string" do
   it "should match /^[a-zA-Z0-9]+$/ when alphanumeric" do
-    forall (string_of alphanumeric)
+    forall (string_of alphanumeric) ~given:(fun s -> String.length s > 0)
            (fun s -> s should match_regexp "^[a-zA-Z0-9]+$")
   done
 done
