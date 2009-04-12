@@ -99,3 +99,5 @@ let hashtbl_of ?(maxlen = 1024) (kgen, vgen) () =
     Hashtbl.replace h (kgen ()) (vgen ())
   done;
   h
+
+let () = Random.self_init ()
