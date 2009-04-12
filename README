@@ -219,34 +219,35 @@ val uppercase : unit -> char
 val alphanumeric : unit -> char
   Generates a random alphanumeric character.
 
-val string_of : ?maxlen:int -> (unit -> char) -> unit -> string
+val string_of : ?length:(unit -> int) -> (unit -> char) -> unit -> string
   Given one of the character generators, returns a random string of length
-  between 0 and maxlen.
+  given by the "length" int generator.
 
-val string : ?maxlen:int -> unit -> string
+val string : ?length:(unit -> int) -> unit -> string
   Generates a random string of ASCII characters. It is equivalent to
   "string_of ascii".
 
-val list_of : ?maxlen:int -> (unit -> 'a) -> unit -> 'a list
+val list_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a list
   Given a generator for the list elements, returns a random list of length
-  between 0 and maxlen.
+  given by the "length" int generator.
 
-val array_of : ?maxlen:int -> (unit -> 'a) -> unit -> 'a array
+val array_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a array
   Given a generator for the array elements, returns a random array of length
-  between 0 and maxlen.
+  given by the "length" int generator.
 
-val queue_of : ?maxlen:int -> (unit -> 'a Queue.t Queue.t) -> unit -> 'a Queue.t
+val queue_of : ?length:(unit -> int) -> (unit -> 'a Queue.t Queue.t) -> unit -> 'a Queue.t
   Given a generator for the queue elements, returns a random queue of length
-  between 0 and maxlen.
+  given by the "length" int generator.
 
-val stack_of : ?maxlen:int -> (unit -> 'a Stack.t Stack.t) -> unit -> 'a Stack.t
+val stack_of : ?length:(unit -> int) -> (unit -> 'a Stack.t Stack.t) -> unit ->
+               'a Stack.t
   Given a generator for the stack elements, returns a random stack of length
-  between 0 and maxlen.
+  given by the "length" int generator.
 
-val hashtbl_of : ?maxlen:int -> (unit -> 'a) * (unit -> 'b) -> unit ->
+val hashtbl_of : ?length:(unit -> int) -> (unit -> 'a) * (unit -> 'b) -> unit ->
                  ('a, 'b) Hashtbl.t
   Given a tuple of generators for the hash table keys and values, returns a
-  random hash table of length between 0 and maxlen.
+  random hash table of length given by the "length" int generator.
 
 
 8. HELPERS

@@ -55,45 +55,45 @@ let alphanumeric () =
   else
     Char.chr (r - 37 + Char.code 'a')
 
-let string_of ?(maxlen = 1024) gen () =
-  let n = int_range 0 maxlen () in
+let string_of ?(length = int_range 0 100) gen () =
+  let n = length () in
   let s = String.create n in
   for i = 0 to pred n do
     s.[i] <- gen ()
   done;
   s
 
-let string ?(maxlen = 1024) () =
-  string_of ~maxlen:maxlen ascii ()
+let string ?(length = int_range 0 100) () =
+  string_of ~length:length ascii ()
 
-let array_of ?(maxlen = 1024) gen () =
-  let n = int_range 0 maxlen () in
+let array_of ?(length = int_range 0 100) gen () =
+  let n = length () in
   Array.init n (fun _ -> gen ())
 
-let list_of ?(maxlen = 1024) gen () =
-  let n = int_range 0 maxlen () in
+let list_of ?(length = int_range 0 100) gen () =
+  let n = length () in
   let rec mklist k l =
     if k = n then l else mklist (succ k) (gen () :: l) in
   mklist 0 []
 
-let queue_of ?(maxlen = 1024) gen () =
+let queue_of ?(length = int_range 0 100) gen () =
   let q = Queue.create () in
-  let n = int_range 0 maxlen () in
+  let n = length () in
   for i = 1 to n do
     Queue.push q (gen ())
   done;
   q
 
-let stack_of ?(maxlen = 1024) gen () =
+let stack_of ?(length = int_range 0 100) gen () =
   let s = Stack.create () in
-  let n = int_range 0 maxlen () in
+  let n = length () in
   for i = 1 to n do
     Stack.push s (gen ())
   done;
   s
 
-let hashtbl_of ?(maxlen = 1024) (kgen, vgen) () =
-  let n = int_range 0 maxlen () in
+let hashtbl_of ?(length = int_range 0 100) (kgen, vgen) () =
+  let n = length () in
   let h = Hashtbl.create n in
   for i = 1 to n do
     Hashtbl.replace h (kgen ()) (vgen ())
