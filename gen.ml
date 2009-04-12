@@ -10,33 +10,33 @@ let int () =
   Random.int max_int
 
 let int_range lb ub () =
-  lb + Random.int (ub - lb)
+  lb + Random.int (ub - lb + 1)
 
 let int32 () =
   Random.int32 Int32.max_int
 
 let int32_range lb ub () =
-  Int32.add lb (Random.int32 (Int32.sub ub lb))
+  Int32.add lb (Random.int32 (Int32.succ (Int32.sub ub lb)))
 
 let int64 () =
   Random.int64 Int64.max_int
 
 let int64_range lb ub () =
-  Int64.add lb (Random.int64 (Int64.sub ub lb))
+  Int64.add lb (Random.int64 (Int64.succ (Int64.sub ub lb)))
 
 let nativeint () =
   Random.nativeint Nativeint.max_int
 
 let nativeint_range lb ub () =
-  Nativeint.add lb (Random.nativeint (Nativeint.sub ub lb))
+  Nativeint.add lb (Random.nativeint (Nativeint.succ (Nativeint.sub ub lb)))
 
 let char () =
-  Char.chr (int_range 0 256 ())
+  Char.chr (int_range 0 255 ())
 
 let char_range lc uc () =
   let lb = Char.code lc in
   let ub = Char.code uc in
-  Char.chr (int_range lb (ub - lb) ())
+  Char.chr (int_range lb ub ())
 
 let ascii () =
   Char.chr (int_range 0 127 ())
