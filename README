@@ -172,20 +172,20 @@ val float : unit -> float
 val int : unit -> int
   Generates a random int between 0 (inclusive) and max_int (exclusive).
 
-val int_range : int -> int -> unit -> int
+val int_in_range : int -> int -> unit -> int
   Generates a random int in the inclusive range given by the two int arguments.
 
 val int32 : unit -> Int32.t
   Generates a random int32 between 0 (inclusive) and Int32.max_int (exclusive).
 
-val int32_range : int32 -> int32 -> unit -> int32
+val int32_in_range : int32 -> int32 -> unit -> int32
   Generates a random int32 in the inclusive range given by the two int32
   arguments.
 
 val int64 : unit -> Int64.t
   Generates a random int64 between 0 (inclusive) and Int64.max_int (exclusive).
 
-val int64_range : int64 -> int64 -> unit -> int64
+val int64_in_range : int64 -> int64 -> unit -> int64
   Generates a random int64 in the inclusive range given by the two int64
   arguments.
 
@@ -193,14 +193,14 @@ val nativeint : unit -> Nativeint.t
   Generates a random nativeint between 0 (inclusive) and Nativeint.max_int
   (exclusive).
 
-val nativeint_range : nativeint -> nativeint -> unit -> nativeint
+val nativeint_in_range : nativeint -> nativeint -> unit -> nativeint
   Generates a random nativeint in the inclusive range given by the two nativeint
   arguments.
 
 val char : unit -> char
   Generates a random character.
 
-val char_range : char -> char -> unit -> char
+val char_in_range : char -> char -> unit -> char
   Generates a random character in the inclusive range given by the two char
   arguments.
 
