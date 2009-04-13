@@ -10,7 +10,7 @@ done;
 
 describe "A bool" do
   it "should be true if all samples are true" do
-    forall bool b . b = true -> b should = true
+    forall 42 bool b . b = true -> b should = true
   done
 done;
 

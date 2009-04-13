@@ -166,16 +166,20 @@ let expr_from_option loc opt =
   | Some e -> e
   | None -> Loc.raise loc (Stream.Error "expected expression after \"->\"")
 
-let property _loc gen var impl e1 e2opt =
+let property _loc gen instances var impl e1 e2opt =
+  let n =
+    match instances with
+    | Some x -> <:expr< Some $int:x$ >>
+    | None -> <:expr< None >> in
   match impl with
   | Some _ ->
       let e2 = expr_from_option _loc e2opt in
       let constr = <:expr< fun $var$ -> $e1$ >> in
       let prop = <:expr< fun $var$ -> $e2$ >> in
-      <:expr< Prop.for_all $gen$ (Some $constr$) $prop$ >>
+      <:expr< Prop.for_all $gen$ $n$ (Some $constr$) $prop$ >>
   | None ->
       let prop = <:expr< fun $var$ -> $e1$ >> in
-      <:expr< Prop.for_all $gen$ None $prop$ >>
+      <:expr< Prop.for_all $gen$ $n$ None $prop$ >>
 
 (* From Camlp4OCamlRevisedParser.ml *)
 let mksequence _loc = function
@@ -229,13 +233,12 @@ EXTEND Gram
     | res = SELF; "should"; "not"; "match"; patt = ipatt ->
         match_unexpectation _loc res patt
 
-    | "forall"; gen = ident; var = ipatt; ".";
+    | "forall"; n = OPT a_INT; gen = ident; var = ipatt; ".";
       e1 = expr LEVEL "top"; impl = OPT "->"; e2 = OPT expr LEVEL "top" ->
-        property _loc <:expr< $id:gen$ >> var impl e1 e2
-
-    | "forall"; "("; gen = expr; ")"; var = ipatt; ".";
+        property _loc <:expr< $id:gen$ >> n var impl e1 e2
+    | "forall"; n = OPT a_INT; "("; gen = expr; ")"; var = ipatt; ".";
       e1 = expr LEVEL "top"; impl = OPT "->"; e2 = OPT expr LEVEL "top" ->
-        property _loc gen var impl e1 e2
+        property _loc gen n var impl e1 e2
     ]
   ];
 END

@@ -154,6 +154,13 @@ in the (contrived) example below.
 If the value of the boolean expression before the arrow is false for a given
 sample, it is discarded and a new one is generated.
 
+By default, 100 samples are generated for each property test. A different
+number of samples may be specified explicitly as in the example below.
+
+  forall 42 bool b . b = true -> b should = true
+
+This will generate 42 bool instances instead of the default 100.
+
 
 7. PREDEFINED GENERATORS
 ------------------------

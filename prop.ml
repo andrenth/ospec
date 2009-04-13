@@ -4,12 +4,16 @@ let rec until p f x =
 let until_ p f x =
   ignore (until p f x)
 
-let for_all gen given prop =
+let for_all gen instances given prop =
+  let n =
+    match instances with
+    | Some x -> x
+    | None -> 100 in
   let constr =
     match given with
     | Some f -> f
     | None -> fun _ -> true in
-  let all_tests_done k = k = 100 in
+  let all_tests_done k = k = n in
   let test k =
     let x = gen () in
     if constr x then begin prop x; succ k end else k in
