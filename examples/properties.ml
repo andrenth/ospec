@@ -1,10 +1,10 @@
 describe "A list" do
   it "should equal itself when reversed twice" do
-    forall (list_of int) l . (List.rev (List.rev l)) should = l
+    forall list l . (List.rev (List.rev l)) should = l
   done;
 
   it "should match head and tail if non-empty" do
-    forall (list_of char) l . List.length l > 0 -> l should match x::xs
+    forall list l . List.length l > 0 -> l should match x::xs
   done
 done;
 
