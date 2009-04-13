@@ -231,17 +231,29 @@ val list_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a list
   Given a generator for the list elements, returns a random list of length
   given by the "length" int generator.
 
+val list : ?length:(unit -> int) -> unit -> unit list
+  Generates a random-sized list of unit elements.
+
 val array_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a array
   Given a generator for the array elements, returns a random array of length
   given by the "length" int generator.
+
+val array : ?length:(unit -> int) -> unit -> unit array
+  Generates a random-sized array of unit elements.
 
 val queue_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a Queue.t
   Given a generator for the queue elements, returns a random queue of length
   given by the "length" int generator.
 
+val queue : ?length:(unit -> int) -> unit -> unit queue
+  Generates a random-sized queue of unit elements.
+
 val stack_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a Stack.t
   Given a generator for the stack elements, returns a random stack of length
   given by the "length" int generator.
+
+val stack : ?length:(unit -> int) -> unit -> unit stack
+  Generates a random-sized stack of unit elements.
 
 val hashtbl_of : ?length:(unit -> int) -> (unit -> 'a) * (unit -> 'b) -> unit ->
                  ('a, 'b) Hashtbl.t
