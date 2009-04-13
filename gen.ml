@@ -76,6 +76,9 @@ let list_of ?(length = int_range 0 100) gen () =
     if k = n then l else mklist (succ k) (gen () :: l) in
   mklist 0 []
 
+let list ?(length = int_range 0 100) =
+  list_of ~length:length (fun () -> ())
+
 let queue_of ?(length = int_range 0 100) gen () =
   let q = Queue.create () in
   let n = length () in
@@ -84,6 +87,9 @@ let queue_of ?(length = int_range 0 100) gen () =
   done;
   q
 
+let queue ?(length = int_range 0 100) =
+  queue_of ~length:length (fun () -> ())
+
 let stack_of ?(length = int_range 0 100) gen () =
   let s = Stack.create () in
   let n = length () in
@@ -91,6 +97,9 @@ let stack_of ?(length = int_range 0 100) gen () =
     Stack.push (gen ()) s
   done;
   s
+
+let stack ?(length = int_range 0 100) =
+  stack_of ~length:length (fun () -> ())
 
 let hashtbl_of ?(length = int_range 0 100) (kgen, vgen) () =
   let n = length () in
