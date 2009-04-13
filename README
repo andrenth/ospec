@@ -235,12 +235,11 @@ val array_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a array
   Given a generator for the array elements, returns a random array of length
   given by the "length" int generator.
 
-val queue_of : ?length:(unit -> int) -> (unit -> 'a Queue.t Queue.t) -> unit -> 'a Queue.t
+val queue_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a Queue.t
   Given a generator for the queue elements, returns a random queue of length
   given by the "length" int generator.
 
-val stack_of : ?length:(unit -> int) -> (unit -> 'a Stack.t Stack.t) -> unit ->
-               'a Stack.t
+val stack_of : ?length:(unit -> int) -> (unit -> 'a) -> unit -> 'a Stack.t
   Given a generator for the stack elements, returns a random stack of length
   given by the "length" int generator.
 

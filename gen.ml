@@ -80,7 +80,7 @@ let queue_of ?(length = int_range 0 100) gen () =
   let q = Queue.create () in
   let n = length () in
   for i = 1 to n do
-    Queue.push q (gen ())
+    Queue.push (gen ()) q
   done;
   q
 
@@ -88,7 +88,7 @@ let stack_of ?(length = int_range 0 100) gen () =
   let s = Stack.create () in
   let n = length () in
   for i = 1 to n do
-    Stack.push s (gen ())
+    Stack.push (gen ()) s
   done;
   s
 
