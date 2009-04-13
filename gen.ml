@@ -70,6 +70,9 @@ let array_of ?(length = int_range 0 100) gen () =
   let n = length () in
   Array.init n (fun _ -> gen ())
 
+let array ?(length = int_range 0 100) =
+  array_of ~length:length (fun () -> ())
+
 let list_of ?(length = int_range 0 100) gen () =
   let n = length () in
   let rec mklist k l =
