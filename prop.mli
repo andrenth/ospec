@@ -1,1 +1,1 @@
-val forall : 'a Gen.t -> ?given:('a -> bool) -> ('a -> 'b) -> unit
+val for_all : 'a Gen.t -> ('a -> bool) option -> ('a -> 'b) -> unit

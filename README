@@ -132,27 +132,27 @@ or a custom one), it is possible to write specifications such as
 
   describe "A list" do
     it "should equal itself when reversed twice" do
-      forall (list_of int) (fun l -> (List.rev (List.rev l)) should = l)
+      forall (list_of int) l . (List.rev (List.rev l)) should = l
     done
   done
 
 In the example above, two generators are used: "list_of" and "int". The former
 is a higher-order generator, since it takes another sample generator as a
 parameter. This generator is used to sample values which the random list will
-contain (in this case, int values).
+contain (in this case, int values). Each sample list will be bound to "l",
+which can then be used in the property specified after the dot.
 
 It is also possible to specify constraints to the generated samples, such as
 in the (contrived) example below.
 
   describe "A bool" do
     it "should be true if all samples are true" do
-      let it_is_true = (=) true in
-      forall bool ~given:it_is_true (fun b -> b should = true)
+      forall bool b . b = true -> b should = true
     done
   done
 
-The labeled parameter "given" is a ('a -> bool) function. If it returns false
-when applied to a sample, the sample is discarded and a new one is generated.
+If the value of the boolean expression before the arrow is false for a given
+sample, it is discarded and a new one is generated.
 
 
 7. PREDEFINED GENERATORS

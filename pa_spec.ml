@@ -157,6 +157,26 @@ let run_spec _loc name seq =
     }
   >>
 
+(*
+ * Property testing.
+ *)
+
+let expr_from_option loc opt =
+  match opt with
+  | Some e -> e
+  | None -> Loc.raise loc (Stream.Error "expected expression after \"->\"")
+
+let property _loc gen var impl e1 e2opt =
+  match impl with
+  | Some _ ->
+      let e2 = expr_from_option _loc e2opt in
+      let constr = <:expr< fun $var$ -> $e1$ >> in
+      let prop = <:expr< fun $var$ -> $e2$ >> in
+      <:expr< Prop.for_all $gen$ (Some $constr$) $prop$ >>
+  | None ->
+      let prop = <:expr< fun $var$ -> $e1$ >> in
+      <:expr< Prop.for_all $gen$ None $prop$ >>
+
 (* From Camlp4OCamlRevisedParser.ml *)
 let mksequence _loc = function
   | <:expr< $_$; $_$ >> as e -> <:expr< do { $e$ } >>
@@ -208,6 +228,14 @@ EXTEND Gram
         match_expectation _loc res patt
     | res = SELF; "should"; "not"; "match"; patt = ipatt ->
         match_unexpectation _loc res patt
+
+    | "forall"; gen = ident; var = ipatt; ".";
+      e1 = expr LEVEL "top"; impl = OPT "->"; e2 = OPT expr LEVEL "top" ->
+        property _loc <:expr< $id:gen$ >> var impl e1 e2
+
+    | "forall"; "("; gen = expr; ")"; var = ipatt; ".";
+      e1 = expr LEVEL "top"; impl = OPT "->"; e2 = OPT expr LEVEL "top" ->
+        property _loc gen var impl e1 e2
     ]
   ];
 END
