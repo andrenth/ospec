@@ -5,7 +5,9 @@ describe "The number one" do
 
   it "should be positive" do
     let positive x = x > 0 in
-    1 should be positive
+    1 should be positive;
+    1 should be (fun x -> x > 2);
+    1 should be (fun x y -> x > y) 2
   done;
 
   it "should be negative when multiplied by -1" do

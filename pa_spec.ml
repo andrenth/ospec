@@ -72,16 +72,26 @@ let one_arg_ident_expectation _loc op result kind =
     else ()
   >>
 
-let fun_expectation _loc args op result expected kind =
-  let args_str = string_of_patt args in
-  let op_str = string_of_expr op in
+let rec mkfun _loc patts e =
+  match patts with
+  | p::ps -> <:expr< fun $p$ -> $mkfun _loc ps e$ >>
+  | [] -> e
+
+let fun_expectation _loc args body result expected kind =
+  let op = mkfun _loc args body in
   let res_str = string_of_expr result in
-  let exp_str = string_of_expr expected in
-  let fun_str = "(fun " ^ args_str ^ " -> " ^ op_str ^ ")" in
+  let fun_str = "(" ^ string_of_expr op ^ ")" in
   let f = kind_test_modifier kind in
+  let value, exp_str_expr =
+    match expected with
+    | Some e ->
+        let exp_str = string_of_expr e in
+        <:expr< $op$ $result$ $e$ >>, <:expr< Some $str:exp_str$ >>
+    | None ->
+        <:expr< $op$ $result$ >>, <:expr< None >> in
   <:expr<
-    if $f$ ((fun $args$ -> $op$) $result$ $expected$) then
-      Spec.add_failure $str:fun_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+    if $f$ $value$ then
+      Spec.add_failure $str:fun_str$ $str:res_str$ $exp_str_expr$ $kind$
     else ()
   >>
 
@@ -212,8 +222,8 @@ EXTEND Gram
         ident_expectation _loc op res exp positive
     | res = SELF; "should"; OPT "be"; op = ident ->
         one_arg_ident_expectation _loc op res positive
-    | res = SELF; "should"; OPT "be"; "("; "fun"; args = ipatt;
-      op = fun_def; ")"; exp = SELF ->
+    | res = SELF; "should"; OPT "be"; "("; "fun"; args = LIST1 ipatt;
+      "->"; op = expr; ")"; exp = OPT expr LEVEL "top" ->
         fun_expectation _loc args op res exp positive
 
     | res = SELF; "should"; "not"; OPT "be"; op = infixop0; exp = SELF ->
@@ -222,8 +232,8 @@ EXTEND Gram
         ident_expectation _loc op res exp negative
     | res = SELF; "should"; "not"; OPT "be"; op = ident ->
         one_arg_ident_expectation _loc op res negative
-    | res = SELF; "should"; "not"; OPT "be"; "("; "fun"; args = ipatt;
-      op = fun_def; ")"; exp = SELF ->
+    | res = SELF; "should"; "not"; OPT "be"; "("; "fun"; args = LIST1 ipatt;
+      "->"; op = expr; ")"; exp = OPT expr LEVEL "top" ->
         fun_expectation _loc args op res exp negative
 
     | "match"; e = sequence; "with"; a = match_case ->
