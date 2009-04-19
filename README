@@ -288,7 +288,6 @@ val match_regexp : string -> string -> bool
 -------
 
 * Handle errors in the specs gracefully.
-* Allow nested specs.
 * Provide more report formats.
 * Provide more helpers.
 * Cleanup the code, which is horrible and hacky.
