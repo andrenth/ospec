@@ -16,10 +16,11 @@ let report_failures failures =
   end;
   Printf.printf "\n"
 
-let spec_summary spec failures =
+let spec_summary root =
+  let failures = Spec.failures root in
   Printf.printf "%d examples, %d failures, %d pending\n\n"
-                (Spec.num_examples spec) (Queue.length failures)
-                (Spec.num_pending ())
+                (Spec.num_examples root) (Queue.length failures)
+                (Spec.num_pending root)
 
 let generic spec_header example_header results_footer spec_footer
             message_of_result specs =
@@ -33,11 +34,10 @@ let generic spec_header example_header results_footer spec_footer
     Spec.iter_subspecs (report_spec ~level:(level+2)) spec in
   let report_spec_and_failures root =
     let spec = Spec.spec root in
-    let failures = Spec.failures root in
     report_spec spec;
     spec_footer ();
-    report_failures failures;
-    spec_summary spec failures in
+    report_failures (Spec.failures root);
+    spec_summary root in
   Queue.iter report_spec_and_failures specs
 
 let nested specs =

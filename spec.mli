@@ -13,8 +13,8 @@ val spec : root_spec -> t
 val failures : root_spec -> failure Queue.t
 val iter_examples : (example -> unit) -> t -> unit
 val iter_subspecs : (t -> unit) -> t -> unit
-val num_examples : t -> int
-val num_pending : unit -> int
+val num_examples : root_spec -> int
+val num_pending : root_spec -> int
 val failure_id : failure -> int
 val failure_operation : failure -> string
 val failure_expected_result : failure -> string option

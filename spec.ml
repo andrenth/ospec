@@ -26,8 +26,10 @@ type t =
   }
 
 type root_spec =
-  { mutable spec : t
-  ; failures     : failure Queue.t
+  { mutable spec         : t
+  ; mutable num_examples : int
+  ; mutable num_pending  : int
+  ; failures             : failure Queue.t
   }
 
 let spec_stack = Stack.create ()
@@ -35,7 +37,6 @@ let spec_queue = Queue.create ()
 let curr_example_result = ref Ok
 let failure_queue = Queue.create ()
 let curr_failure_id = ref 1
-let total_pending = ref 0
 
 let name spec =
   spec.name
@@ -69,7 +70,11 @@ let new_spec name =
   }
 
 let new_root_spec spec =
-  { spec = spec; failures = Queue.create () }
+  { spec         = spec
+  ; num_examples = 0
+  ; num_pending  = 0
+  ; failures     = Queue.create ()
+  }
 
 let curr_root_spec = ref (new_root_spec (new_spec ""))
 
@@ -79,11 +84,11 @@ let iter_examples f spec =
 let iter_subspecs f spec =
   Queue.iter f spec.subspecs
 
-let num_examples spec =
-  Queue.length spec.examples
+let num_examples root =
+  root.num_examples
 
-let num_pending () =
-  !total_pending
+let num_pending root =
+  root.num_pending
 
 let failure_id failure =
   failure.id
@@ -135,12 +140,13 @@ let remove_spec spec parent =
 
 let new_example description =
   let ex = { description = description; result = !curr_example_result } in
+  !curr_root_spec.num_examples <- !curr_root_spec.num_examples + 1;
   curr_example_result := Ok;
   ex
 
 let new_pending_example description =
   let ex = { description = description; result = Pending } in
-  incr total_pending;
+  !curr_root_spec.num_pending <- !curr_root_spec.num_pending + 1;
   ex
 
 let incr_failure_id () =
@@ -177,8 +183,7 @@ let cleanup () =
   Queue.clear spec_queue;
   Queue.clear failure_queue;
   curr_example_result := Ok;
-  curr_failure_id := 1;
-  total_pending := 0
+  curr_failure_id := 1
 
 let set_example_failure id =
   curr_example_result :=
