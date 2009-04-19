@@ -46,9 +46,11 @@ let infixop_expectation _loc op result expected kind =
   let exp_str = string_of_expr expected in
   let f = kind_test_modifier kind in
   <:expr<
-    if $f$ ($op$ $result$ $expected$) then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
-    else ()
+    try
+      if $f$ ($op$ $result$ $expected$) then
+        Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+      else ()
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 let ident_expectation _loc op result expected kind =
@@ -57,9 +59,11 @@ let ident_expectation _loc op result expected kind =
   let exp_str = string_of_expr expected in
   let f = kind_test_modifier kind in
   <:expr<
-    if $f$ ($id:op$ $result$ $expected$) then
-      Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
-    else ()
+    try
+      if $f$ ($id:op$ $result$ $expected$) then
+        Spec.add_failure $str:op_str$ $str:res_str$ (Some $str:exp_str$) $kind$
+      else ()
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 let one_arg_ident_expectation _loc op result kind =
@@ -67,9 +71,11 @@ let one_arg_ident_expectation _loc op result kind =
   let res_str = string_of_expr result in
   let f = kind_test_modifier kind in
   <:expr<
-    if $f$ ($id:op$ $result$) then
-      Spec.add_failure $str:op_str$ $str:res_str$ None $kind$
-    else ()
+    try
+      if $f$ ($id:op$ $result$) then
+        Spec.add_failure $str:op_str$ $str:res_str$ None $kind$
+      else ()
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 let rec mkfun _loc patts e =
@@ -90,29 +96,35 @@ let fun_expectation _loc args body result expected kind =
     | None ->
         <:expr< $op$ $result$ >>, <:expr< None >> in
   <:expr<
-    if $f$ $value$ then
-      Spec.add_failure $str:fun_str$ $str:res_str$ $exp_str_expr$ $kind$
-    else ()
+    try
+      if $f$ $value$ then
+        Spec.add_failure $str:fun_str$ $str:res_str$ $exp_str_expr$ $kind$
+      else ()
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 let match_expectation _loc result pattern =
   let res_str = string_of_expr result in
   let patt_str = string_of_patt pattern in
   <:expr<
-    match $result$ with
-    [ $pattern$ -> ()
-    | _ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
-                            Spec.Positive ]
+    try
+      match $result$ with
+      [ $pattern$ -> ()
+      | _ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
+                              Spec.Positive ]
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 let match_unexpectation _loc result pattern =
   let res_str = string_of_expr result in
   let patt_str = string_of_patt pattern in
   <:expr<
-    match $result$ with
-    [ $pattern$ -> Spec.add_failure "match" $str:res_str$ (Some $str:patt_str$)
-                                    Spec.Negative
-    | _ -> () ]
+    try
+      match $result$ with
+      [ $pattern$ -> Spec.add_failure "match" $str:res_str$
+                                      (Some $str:patt_str$) Spec.Negative
+      | _ -> () ]
+    with e -> Spec.add_error (Printexc.to_string e)
   >>
 
 (*

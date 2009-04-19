@@ -1,4 +1,4 @@
-type result = Ok | Failed of int * int | Pending
+type result = Ok | Fail of int * int | Err of int | Pending
 
 type example =
   { mutable description : string
@@ -8,12 +8,19 @@ type example =
 type expectation_kind = Positive | Negative (* should or should not *)
 
 type failure =
-  { id        : int
-  ; operation : string
-  ; actual    : string
-  ; expected  : string option
-  ; kind      : expectation_kind
+  { failure_id : int
+  ; operation  : string
+  ; actual     : string
+  ; expected   : string option
+  ; kind       : expectation_kind
   }
+
+type error =
+  { error_id : int
+  ; message  : string
+  }
+
+type problem = Failure of failure | Error of error
 
 type t =
   { name                : string
@@ -29,14 +36,14 @@ type root_spec =
   { mutable spec         : t
   ; mutable num_examples : int
   ; mutable num_pending  : int
-  ; failures             : failure Queue.t
+  ; problems             : problem Queue.t
   }
 
 let spec_stack = Stack.create ()
 let spec_queue = Queue.create ()
 let curr_example_result = ref Ok
-let failure_queue = Queue.create ()
-let curr_failure_id = ref 1
+let problem_queue = Queue.create ()
+let curr_problem_id = ref 1
 
 let name spec =
   spec.name
@@ -56,8 +63,8 @@ let specs () =
 let spec root =
   root.spec
 
-let failures root =
-  root.failures
+let problems root =
+  root.problems
 
 let new_spec name =
   { name = name
@@ -73,7 +80,7 @@ let new_root_spec spec =
   { spec         = spec
   ; num_examples = 0
   ; num_pending  = 0
-  ; failures     = Queue.create ()
+  ; problems     = Queue.create ()
   }
 
 let curr_root_spec = ref (new_root_spec (new_spec ""))
@@ -91,7 +98,7 @@ let num_pending root =
   root.num_pending
 
 let failure_id failure =
-  failure.id
+  failure.failure_id
 
 let failure_operation failure =
   failure.operation
@@ -106,6 +113,12 @@ let positive_failure failure =
   match failure.kind with
   | Positive -> true
   | Negative -> false
+
+let error_id error =
+  error.error_id
+
+let error_message error =
+  error.message
 
 let add_example example =
   let spec = Stack.top spec_stack in
@@ -149,11 +162,11 @@ let new_pending_example description =
   !curr_root_spec.num_pending <- !curr_root_spec.num_pending + 1;
   ex
 
-let incr_failure_id () =
-  incr curr_failure_id
+let incr_problem_id () =
+  incr curr_problem_id
 
-let current_failure_id () =
-  !curr_failure_id
+let current_problem_id () =
+  !curr_problem_id
 
 let add_before_each hook =
   let spec = Stack.top spec_stack in
@@ -181,26 +194,40 @@ let run_after_all_hooks () =
 
 let cleanup () =
   Queue.clear spec_queue;
-  Queue.clear failure_queue;
+  Queue.clear problem_queue;
   curr_example_result := Ok;
-  curr_failure_id := 1
+  curr_problem_id := 1
 
 let set_example_failure id =
   curr_example_result :=
     match !curr_example_result with
-    | Ok -> Failed (id, id)
-    | Failed (i, _) -> Failed (i, id)
+    | Ok -> Fail (id, id)
+    | Fail (i, _) -> Fail (i, id)
+    | Err _ -> failwith "Shouldn't fail after an error"
     | Pending -> failwith "A Pending example can't fail"
 
+let set_example_error id =
+  curr_example_result := Err id
+
 let add_failure operation actual expected kind =
-  let id = current_failure_id () in
+  let id = current_problem_id () in
   let failure =
-    { id = id
-    ; operation = operation
-    ; actual    = actual
-    ; expected  = expected
-    ; kind      = kind
+    { failure_id = id
+    ; operation  = operation
+    ; actual     = actual
+    ; expected   = expected
+    ; kind       = kind
     } in
   set_example_failure id;
-  Queue.push failure !curr_root_spec.failures;
-  incr_failure_id ()
+  Queue.push (Failure failure) !curr_root_spec.problems;
+  incr_problem_id ()
+
+let add_error err =
+  let id = current_problem_id () in
+  let error =
+    { error_id = id
+    ; message  = err
+    } in
+  set_example_error id;
+  Queue.push (Error error) !curr_root_spec.problems;
+  incr_problem_id ()

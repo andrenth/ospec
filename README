@@ -287,7 +287,6 @@ val match_regexp : string -> string -> bool
 9. TODO
 -------
 
-* Handle errors in the specs gracefully.
 * Provide more report formats.
 * Provide more helpers.
 * Cleanup the code, which is horrible and hacky.
