@@ -80,6 +80,9 @@ Here's useless specification which shows how OSpec's syntax works:
     it "should be cool"
   done
 
+It is also possible to group related examples in nested specifications. See
+examples/nested.ml for a sample.
+
 
 4. BEFORE AND AFTER BLOCKS
 --------------------------
