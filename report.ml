@@ -1,7 +1,8 @@
 open Spec
 
-let report_failures spec =
-  if Spec.num_failures spec > 0 then begin
+let report_failures failures =
+  if not (Queue.is_empty failures) then begin
+    Printf.printf "\n";
     let report failure =
       let expected =
         match Spec.failure_expected_result failure with
@@ -11,53 +12,60 @@ let report_failures spec =
         (Spec.failure_id failure) (Spec.failure_operation failure)
         (Spec.failure_actual_result failure) expected
         (if Spec.positive_failure failure then "true" else "false") in
-    Spec.iter_failures report spec;
-    Printf.printf "\n"
-  end
+    Queue.iter report failures
+  end;
+  Printf.printf "\n"
 
-let spec_footer spec =
+let spec_summary spec failures =
   Printf.printf "%d examples, %d failures, %d pending\n\n"
-                (Spec.num_examples spec) (Spec.num_failures spec)
+                (Spec.num_examples spec) (Queue.length failures)
                 (Spec.num_pending ())
 
-let generic spec_header example_header results_footer example_footer
-    message_of_result specs =
-  let report_spec spec =
-    spec_header spec;
+let generic spec_header example_header results_footer spec_footer
+            message_of_result specs =
+  let rec report_spec ?(level=0) spec =
+    spec_header spec level;
     let report_example example =
-      example_header example;
+      example_header example level;
       Printf.printf "%s" (message_of_result (Spec.example_result example));
       results_footer () in
     Spec.iter_examples report_example spec;
-    example_footer ();
-    report_failures spec;
-    spec_footer spec in
-  Queue.iter report_spec specs
+    Spec.iter_subspecs (report_spec ~level:(level+2)) spec in
+  let report_spec_and_failures root =
+    let spec = Spec.spec root in
+    let failures = Spec.failures root in
+    report_spec spec;
+    spec_footer ();
+    report_failures failures;
+    spec_summary spec failures in
+  Queue.iter report_spec_and_failures specs
 
 let nested specs =
-  let spec_header spec =
-    Printf.printf "%s\n" (Spec.name spec) in
-  let example_header example =
-    Printf.printf "  %s" (Spec.example_description example) in
+  let spec_header spec level =
+    let pad = String.make level ' ' in
+    Printf.printf "%s%s\n" pad (Spec.name spec) in
+  let example_header example level =
+    let pad = String.make (level + 2) ' ' in
+    Printf.printf "%s%s" pad (Spec.example_description example) in
   let results_footer () = Printf.printf "\n" in
-  let example_footer () = Printf.printf "\n" in
+  let spec_footer () = () in
   let message_of_result = function
     | Ok -> ""
     | Failed (i, j) ->
         if i = j then Printf.sprintf " (FAILED: %d)" i
                  else Printf.sprintf " (FAILED: %d-%d)" i j
     | Pending -> " (Pending)" in
-  generic spec_header example_header results_footer example_footer
+  generic spec_header example_header results_footer spec_footer
           message_of_result specs
 
 let progress specs =
-  let spec_header _ = () in
-  let example_header _ = () in
+  let spec_header _ _ = () in
+  let example_header _ _ = () in
   let results_footer () = () in
-  let example_footer () = Printf.printf "\n\n" in
+  let spec_footer () = Printf.printf "\n" in
   let message_of_result = function
     | Ok -> "."
     | Failed _ -> "F"
     | Pending -> "*" in
-  generic spec_header example_header results_footer example_footer
+  generic spec_header example_header results_footer spec_footer
           message_of_result specs

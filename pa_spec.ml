@@ -122,11 +122,11 @@ let match_unexpectation _loc result pattern =
 let example_group _loc descr seq =
   <:expr<
     do {
-      Spec.run_before_each_hook ();
+      Spec.run_before_each_hooks ();
       do { $list:seq$ };
       let example = Spec.new_example $str:descr$;
       Spec.add_example example;
-      Spec.run_after_each_hook ()
+      Spec.run_after_each_hooks ()
     }
   >>
 
@@ -139,14 +139,14 @@ let pending_example_group _loc descr =
  * "before/after each" blocks.
  *)
 
-let set_before_each_hook _loc seq =
-  <:expr< Spec.set_before_each (fun () -> do { $list:seq$ }) >>
+let add_before_each_hook _loc seq =
+  <:expr< Spec.add_before_each (fun () -> do { $list:seq$ }) >>
 
-let set_after_each_hook _loc seq =
-  <:expr< Spec.set_after_each (fun () -> do { $list:seq$ }) >>
+let add_after_each_hook _loc seq =
+  <:expr< Spec.add_after_each (fun () -> do { $list:seq$ }) >>
 
-let set_after_all_hook _loc seq =
-  <:expr< Spec.set_after_all (fun () -> do { $list:seq$ }) >>
+let add_after_all_hook _loc seq =
+  <:expr< Spec.add_after_all (fun () -> do { $list:seq$ }) >>
 
 (*
  * "describe" blocks.
@@ -155,15 +155,11 @@ let set_after_all_hook _loc seq =
 let run_spec _loc name seq =
   <:expr<
     do {
-      do { $list:seq$ };
       let spec = Spec.new_spec $str:name$;
-      Spec.transfer_examples spec;
-      Spec.transfer_failures spec;
-      Spec.add_spec spec;
-      Spec.run_after_all_hook ();
-      Spec.set_before_each (fun () -> ());
-      Spec.set_after_each (fun () -> ());
-      Spec.set_after_all (fun () -> ())
+      let parent = Spec.start spec;
+      do { $list:seq$ };
+      Spec.run_after_all_hooks ();
+      Spec.remove_spec spec parent
     }
   >>
 
@@ -204,12 +200,12 @@ EXTEND Gram
     | "before"; "all"; "do"; seq = LIST1 expr; "done" ->
         <:expr< do { $list:seq$ } >>
     | "before"; "each"; "do"; seq = LIST1 expr; "done" ->
-        set_before_each_hook _loc seq
+        add_before_each_hook _loc seq
 
     | "after"; "all"; "do"; seq = LIST1 expr; "done" ->
-        set_after_all_hook _loc seq
+        add_after_all_hook _loc seq
     | "after"; "each"; "do"; seq = LIST1 expr; "done" ->
-        set_after_each_hook _loc seq
+        add_after_each_hook _loc seq
 
     | "it"; descr = STRING; "do"; seq = LIST1 expr; "done" ->
         example_group _loc descr seq
