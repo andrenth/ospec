@@ -48,9 +48,6 @@ let curr_problem_id = ref 1
 let name spec =
   spec.name
 
-let subspecs spec =
-  spec.subspecs
-
 let example_description example =
   example.description
 
