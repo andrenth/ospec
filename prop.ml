@@ -4,15 +4,14 @@ let rec until p f x =
 let until_ p f x =
   ignore (until p f x)
 
+let from_option z opt =
+  match opt with
+  | Some x -> x
+  | None -> z
+
 let for_all gen instances given prop =
-  let n =
-    match instances with
-    | Some x -> x
-    | None -> 100 in
-  let constr =
-    match given with
-    | Some f -> f
-    | None -> fun _ -> true in
+  let n = from_option 100 instances in
+  let constr = from_option (fun _ -> true) given in
   let all_tests_done k = k = n in
   let test k =
     let x = gen () in
