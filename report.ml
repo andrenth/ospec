@@ -6,9 +6,10 @@ let report_failure failure =
     match Spec.failure_expected_result failure with
     | Some e -> sprintf " %s" e
     | None -> "" in
-  printf "%d) Expected `%s %s%s' to return %s\n"
+  printf "%d) Expected `%s (%s) (%s)' to return %s\n"
          (Spec.failure_id failure) (Spec.failure_operation failure)
-         (Spec.failure_actual_result failure) expected
+         (Spec.failure_actual_result failure)
+         (String.sub expected 1 (String.length expected - 1))
          (if Spec.positive_failure failure then "true" else "false")
 
 let report_error error =
