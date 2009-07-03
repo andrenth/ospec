@@ -24,7 +24,7 @@ let parse_args () =
 let report_function_name = function
   | "nested" -> "Report.nested"
   | "progress" -> "Report.progress"
-  | s -> raise (Arg.Bad (sprintf "unkown format `%s' specified" s))
+  | s -> raise (Arg.Bad (sprintf "unknown format `%s' specified" s))
 
 let rec run_files report = function
   | [] -> ()
