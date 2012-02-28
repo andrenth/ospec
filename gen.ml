@@ -6,11 +6,13 @@ let bool () =
 let float () =
   Random.float 1.0
 
+let max_rand_int = 1073741823  (* 2**30-1 *)
+
 let int () =
-  Random.int max_int
+  Random.int max_rand_int
 
 let int_in_range lb ub () =
-  lb + Random.int (ub - lb + 1)
+  lb + Random.int (min (ub - lb + 1) max_rand_int)
 
 let int32 () =
   Random.int32 Int32.max_int
