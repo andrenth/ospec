@@ -1,6 +1,6 @@
 OASISFormat: 0.2
 Name:        ospec
-Version:     0.2.0
+Version:     0.2.1
 Synopsis:    BDD for OCaml
 Authors:     Andre Nathan
 LicenseFile: LICENSE
