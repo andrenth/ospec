@@ -1,0 +1,13 @@
+# OASIS_START
+# DO NOT EDIT (digest: cb08f8e2bf0a9a6ed85e2a8d88512a68)
+# Library ospec
+"src": include
+# Executable ospec
+"src/ospec.byte": use_ospec
+<src/*.ml{,i}>: use_ospec
+# OASIS_STOP
+<src/pa_spec.ml>: syntax_camlp4o, pkg_camlp4.extend, pkg_camlp4.quotations
+<src/ospec.ml>: pkg_findlib
+"src/ospec.byte": use_str
+"src/ospec.byte": pkg_findlib
+"src/ospec.byte": linkall

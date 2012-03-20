@@ -1,9 +1,5 @@
-*.annot
-*.cmi
-*.cmx
-*.cma
-*.cmo
 *.swp
-*.a
-*.o
-ospec
+_build/
+ospec.byte
+setup.data
+setup.log

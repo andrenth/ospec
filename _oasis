@@ -1,0 +1,23 @@
+OASISFormat: 0.2
+Name:        ospec
+Version:     0.2.0
+Synopsis:    BDD for OCaml
+Authors:     Andre Nathan
+LicenseFile: LICENSE
+License:     MIT
+InstallType:      Custom (0.2)
+XCustomInstall:   EXEC_PREFIX=$exec_prefix make install
+XCustomUninstall: make uninstall
+
+
+Library ospec
+  Path:             src
+  BuildTools:       ocamlbuild
+  CompiledObject:   byte
+  Modules:          Helpers, Prop, Spec, Gen, Pa_spec, Report
+Executable ospec
+  Path:             src
+  BuildTools:       ocamlbuild
+  MainIs:           ospec.ml
+  CompiledObject:   byte
+  BuildDepends:     ospec

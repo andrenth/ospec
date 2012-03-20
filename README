@@ -23,8 +23,9 @@ there are two limitations due to OCaml toplevel bugs:
 
 To build and install OSpec, simply type
 
-  $ make
-  # make install
+  $ ocaml setup.ml -configure
+  $ ocaml setup.ml -build
+  # ocaml setup.ml -install
 
 These commands (and OSpec itself) rely on findlib, so you need to have it
 installed for them to work. An executable called "ospec" which takes
