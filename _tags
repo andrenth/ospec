@@ -1,7 +1,7 @@
 # OASIS_START
 # DO NOT EDIT (digest: 18d6a9ae3a887cdc314214db86f3efa1)
-# Ignore VCS directories, you can use the same kind of rule outside 
-# OASIS_START/STOP if you want to exclude directories that contains 
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
@@ -21,6 +21,8 @@
 # OASIS_STOP
 <src/pa_spec.ml>: syntax_camlp4o, pkg_camlp4.extend, pkg_camlp4.quotations
 <src/ospec.ml>: pkg_findlib
+<src/ospec.ml>: compiler-libs
 "src/ospec.byte": use_str
 "src/ospec.byte": pkg_findlib
+"src/ospec.byte": compiler-libs
 "src/ospec.byte": linkall
