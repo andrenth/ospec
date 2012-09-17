@@ -488,11 +488,17 @@ let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
 # 490 "myocamlbuild.ml"
 (* OASIS_STOP *)
-let compiler_libs = if Sys.ocaml_version.[0] = '4' then [A"-I"; A"+compiler-libs"] else [];;
-let toplevel_files = if Sys.ocaml_version.[0] = '4'
-  then [A"ocamlcommon.cma"; A"ocamlbytecomp.cma"; A"ocamltoplevel.cma";]
-  else [A"toplevellib.cma"];;
-let addition_files = List.append toplevel_files [A"camlp4o.cma"];;
+let compiler_libs =
+  if Sys.ocaml_version.[0] = '4' then
+    [A"-I"; A"+compiler-libs"]
+  else
+    [];;
+let toplevel_files =
+  if Sys.ocaml_version.[0] = '4' then
+    [A"ocamlcommon.cma"; A"ocamlbytecomp.cma"; A"ocamltoplevel.cma"]
+  else
+    [A"toplevellib.cma"];;
+let additional_files = List.append toplevel_files [A"camlp4o.cma"];;
 
 flag ["ocaml"; "compile"; "compiler-libs"] & S compiler_libs;
 flag ["ocaml"; "link"; "compiler-libs"] & S compiler_libs;
@@ -500,6 +506,6 @@ flag ["ocaml"; "ocamldep"; "compiler-libs"] & S compiler_libs;
 
 flag ["file:src/ospec.byte"]
   (S(List.append [A"-I"; A"+camlp4"; A"dynlink.cma";]
-       addition_files));
+       additional_files));
 
 Ocamlbuild_plugin.dispatch dispatch_default;;
