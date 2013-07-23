@@ -1,5 +1,5 @@
 name = "ospec"
-version = "0.2.1"
+version = "0.3.2"
 description = "BDD for OCaml"
 requires = "camlp4"
 archive(syntax,preprocessor) = "pa_spec.cmo"
